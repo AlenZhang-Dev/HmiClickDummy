@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HMI Designer - Customizable Power Tool Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .container {
+            display: flex;
+            flex: 1;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            height: fit-content;
+        }
+
+        .main-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .hmi-workspace {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+            min-height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 8px;
+        }
+
+        .dimension-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        .input-group input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .element-library {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .element-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .element-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+
+        .element-item:active {
+            cursor: grabbing;
+        }
+
+        .element-icon {
+            font-size: 2em;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .element-name {
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+        }
+
+        .hmi-canvas {
+            border: 3px dashed #ccc;
+            background: #fafafa;
+            position: relative;
+            transition: all 0.3s ease;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .hmi-canvas.drag-over {
+            border-color: #667eea;
+            background: #f0f4ff;
+            box-shadow: inset 0 0 20px rgba(102, 126, 234, 0.2);
+        }
+
+        .dropped-element {
+            position: absolute;
+            border: 2px solid #667eea;
+            border-radius: 8px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            cursor: move;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s ease;
+            text-align: center;
+            line-height: 1.2;
+        }
+
+        .dropped-element:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .dropped-element.selected {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 0 3px rgba(255, 107, 107, 0.3);
+        }
+
+        /* Interactive Element States */
+        .dropped-element.active {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border-color: #4CAF50;
+            animation: pulse 1s infinite;
+        }
+
+        .dropped-element.warning {
+            background: linear-gradient(135deg, #FF9800, #F57C00);
+            color: white;
+            border-color: #FF9800;
+            animation: blink 0.5s infinite alternate;
+        }
+
+        .dropped-element.error {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            border-color: #f44336;
+            animation: shake 0.5s infinite;
+        }
+
+        .dropped-element.motor-running {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            border-color: #2196F3;
+            animation: rotate 2s linear infinite;
+        }
+
+        .dropped-element.switch-on {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .dropped-element.switch-off {
+            background: linear-gradient(135deg, #757575, #424242);
+            color: white;
+            border-color: #757575;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .canvas-placeholder {
+            color: #999;
+            font-size: 1.2em;
+            text-align: center;
+            padding: 40px;
+            border: 2px dashed #ddd;
+            border-radius: 10px;
+        }
+
+        .export-controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+            }
+            
+            .dimension-controls {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔧 HMI Designer</h1>
+        <p>Create customizable interfaces for power tools</p>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <div class="section-title">📐 Canvas Settings</div>
+            <div class="dimension-controls">
+                <div class="input-group">
+                    <label for="canvas-width">Width (px)</label>
+                    <input type="number" id="canvas-width" value="300" min="100" max="800">
+                </div>
+                <div class="input-group">
+                    <label for="canvas-height">Height (px)</label>
+                    <input type="number" id="canvas-height" value="400" min="100" max="600">
+                </div>
+            </div>
+            <button class="btn" onclick="updateCanvasSize()">Update Canvas Size</button>
+
+            <div class="section-title" style="margin-top: 30px;">🎨 Bosch Power Tool Elements</div>
+            <div class="element-library">
+                <!-- Core Components -->
+                <div class="element-item" draggable="true" data-type="main-switch" data-icon="🔴" data-interactive="true">
+                    <span class="element-icon">🔴</span>
+                    <span class="element-name">Main Switch</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="motor" data-icon="⚙️" data-interactive="true">
+                    <span class="element-icon">⚙️</span>
+                    <span class="element-name">Motor</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="trigger" data-icon="🔫" data-interactive="true">
+                    <span class="element-icon">🔫</span>
+                    <span class="element-name">Trigger</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="chuck" data-icon="🔧" data-interactive="true">
+                    <span class="element-icon">🔧</span>
+                    <span class="element-name">Chuck</span>
+                </div>
+                
+                <!-- Bosch Specific Controls -->
+                <div class="element-item" draggable="true" data-type="ecs-system" data-icon="🛡️" data-interactive="true">
+                    <span class="element-icon">🛡️</span>
+                    <span class="element-name">ECS Protection</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="speed-selector" data-icon="🎯" data-interactive="true">
+                    <span class="element-icon">🎯</span>
+                    <span class="element-name">Speed Selector</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="torque-setting" data-icon="🔩" data-interactive="true">
+                    <span class="element-icon">🔩</span>
+                    <span class="element-name">Torque Setting</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="direction-switch" data-icon="↔️" data-interactive="true">
+                    <span class="element-icon">↔️</span>
+                    <span class="element-name">Direction Switch</span>
+                </div>
+                
+                <!-- Indicators & Displays -->
+                <div class="element-item" draggable="true" data-type="battery-gauge" data-icon="🔋" data-interactive="true">
+                    <span class="element-icon">🔋</span>
+                    <span class="element-name">Battery Gauge</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="led-light" data-icon="💡" data-interactive="true">
+                    <span class="element-icon">💡</span>
+                    <span class="element-name">LED Work Light</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="rpm-display" data-icon="📊" data-interactive="true">
+                    <span class="element-icon">📊</span>
+                    <span class="element-name">RPM Display</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="mode-indicator" data-icon="⚡" data-interactive="true">
+                    <span class="element-icon">⚡</span>
+                    <span class="element-name">Mode Indicator</span>
+                </div>
+                
+                <!-- Safety Features -->
+                <div class="element-item" draggable="true" data-type="overload-protection" data-icon="🛑" data-interactive="true">
+                    <span class="element-icon">🛑</span>
+                    <span class="element-name">Overload Alert</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="brake-system" data-icon="🚫" data-interactive="true">
+                    <span class="element-icon">🚫</span>
+                    <span class="element-name">Electronic Brake</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="cooling-fan" data-icon="🌀" data-interactive="true">
+                    <span class="element-icon">🌀</span>
+                    <span class="element-name">Cooling Fan</span>
+                </div>
+                <div class="element-item" draggable="true" data-type="temperature-sensor" data-icon="🌡️" data-interactive="true">
+                    <span class="element-icon">🌡️</span>
+                    <span class="element-name">Temp Sensor</span>
+                </div>
+            </div>
+
+            <div class="export-controls">
+                <button class="btn btn-secondary" onclick="clearCanvas()">Clear All</button>
+                <button class="btn btn-success" onclick="exportDesign()">Export</button>
+                <button class="btn btn-warning" onclick="toggleSimulation()">Start Simulation</button>
+            </div>
+
+            <div class="section-title" style="margin-top: 30px;">🎮 Simulation Controls</div>
+            <div id="simulation-panel" style="display: none;">
+                <button class="btn" onclick="simulateMainSwitchToggle()">Toggle Main Switch</button>
+                <button class="btn" onclick="simulateTriggerPress()">Press Trigger</button>
+                <button class="btn" onclick="simulateOverload()">Simulate Overload</button>
+                <button class="btn btn-secondary" onclick="resetAllStates()">Reset All</button>
+            </div>
+        </div>
+
+        <div class="main-area">
+            <div class="controls">
+                <div class="section-title">ℹ️ Bosch Power Tool HMI Designer</div>
+                <p><strong>How to use:</strong></p>
+                <ul style="margin-left: 20px; margin-top: 10px; line-height: 1.6;">
+                    <li>Set your desired canvas dimensions and click "Update Canvas Size"</li>
+                    <li>Drag Bosch power tool elements from the library to the canvas</li>
+                    <li>Click on placed elements to select them</li>
+                    <li>Use "Start Simulation" to test element interactions</li>
+                    <li>Main Switch controls motor operation and safety systems</li>
+                    <li>Motor responds to trigger input when main switch is ON</li>
+                    <li>ECS protection and overload systems work automatically</li>
+                </ul>
+                <div style="margin-top: 15px; padding: 10px; background: #e8f4f8; border-radius: 8px; border-left: 4px solid #2196F3;">
+                    <strong>💡 Bosch Features:</strong> ECS Electronic Cell Protection, Variable Speed Control, Electronic Brake System, LED Work Light
+                </div>
+            </div>
+
+            <div class="hmi-workspace">
+                <div id="hmi-canvas" class="hmi-canvas" style="width: 300px; height: 400px;">
+                    <div class="canvas-placeholder">
+                        Drag elements here to build your HMI interface
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let draggedElement = null;
+        let selectedElement = null;
+        let elementCounter = 0;
+        let simulationActive = false;
+        let toolState = {
+            mainSwitch: false,
+            motor: false,
+            trigger: false,
+            battery: 85,
+            temperature: 25,
+            rpm: 0,
+            overload: false,
+            brake: false,
+            direction: 'forward'
+        };
+
+        // Canvas size update
+        function updateCanvasSize() {
+            const width = document.getElementById('canvas-width').value;
+            const height = document.getElementById('canvas-height').value;
+            const canvas = document.getElementById('hmi-canvas');
+            
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            
+            // Remove placeholder if it exists
+            const placeholder = canvas.querySelector('.canvas-placeholder');
+            if (placeholder && canvas.children.length > 1) {
+                placeholder.remove();
+            }
+        }
+
+        // Drag and drop functionality
+        document.querySelectorAll('.element-item').forEach(item => {
+            item.addEventListener('dragstart', function(e) {
+                draggedElement = {
+                    type: this.dataset.type,
+                    icon: this.dataset.icon,
+                    interactive: this.dataset.interactive === 'true'
+                };
+                e.dataTransfer.effectAllowed = 'copy';
+            });
+        });
+
+        const canvas = document.getElementById('hmi-canvas');
+
+        canvas.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+            this.classList.add('drag-over');
+        });
+
+        canvas.addEventListener('dragleave', function(e) {
+            if (!this.contains(e.relatedTarget)) {
+                this.classList.remove('drag-over');
+            }
+        });
+
+        canvas.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+            
+            if (draggedElement) {
+                // Remove placeholder if it exists
+                const placeholder = this.querySelector('.canvas-placeholder');
+                if (placeholder) {
+                    placeholder.remove();
+                }
+
+                // Calculate position relative to canvas
+                const rect = this.getBoundingClientRect();
+                const x = e.clientX - rect.left - 30;
+                const y = e.clientY - rect.top - 20;
+
+                // Create new element
+                const newElement = document.createElement('div');
+                newElement.className = 'dropped-element';
+                newElement.style.left = Math.max(0, Math.min(x, rect.width - 60)) + 'px';
+                newElement.style.top = Math.max(0, Math.min(y, rect.height - 40)) + 'px';
+                newElement.style.width = '80px';
+                newElement.style.height = '60px';
+                newElement.innerHTML = draggedElement.icon + '<br>' + getElementDisplayName(draggedElement.type);
+                newElement.dataset.id = 'element-' + (++elementCounter);
+                newElement.dataset.type = draggedElement.type;
+                newElement.dataset.interactive = draggedElement.interactive;
+                newElement.dataset.state = getInitialState(draggedElement.type);
+
+                // Make element draggable within canvas
+                makeElementDraggable(newElement);
+                
+                // Add click handler for selection and interaction
+                newElement.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    selectElement(this);
+                    if (simulationActive && this.dataset.interactive === 'true') {
+                        handleElementInteraction(this);
+                    }
+                });
+
+                this.appendChild(newElement);
+                draggedElement = null;
+
+                // Update element appearance if simulation is active
+                if (simulationActive) {
+                    updateElementAppearance(newElement);
+                }
+            }
+        });
+
+        // Get display name for element
+        function getElementDisplayName(type) {
+            const names = {
+                'main-switch': 'Main Switch',
+                'motor': 'Motor',
+                'trigger': 'Trigger',
+                'chuck': 'Chuck',
+                'ecs-system': 'ECS',
+                'speed-selector': 'Speed',
+                'torque-setting': 'Torque',
+                'direction-switch': 'Direction',
+                'battery-gauge': 'Battery',
+                'led-light': 'LED',
+                'rpm-display': 'RPM',
+                'mode-indicator': 'Mode',
+                'overload-protection': 'Overload',
+                'brake-system': 'Brake',
+                'cooling-fan': 'Fan',
+                'temperature-sensor': 'Temp'
+            };
+            return names[type] || type;
+        }
+
+        // Get initial state for element
+        function getInitialState(type) {
+            const states = {
+                'main-switch': 'off',
+                'motor': 'stopped',
+                'trigger': 'released',
+                'battery-gauge': 'normal',
+                'led-light': 'off',
+                'direction-switch': 'forward',
+                'overload-protection': 'normal',
+                'brake-system': 'disengaged',
+                'cooling-fan': 'off'
+            };
+            return states[type] || 'normal';
+        }
+
+        // Handle element interactions during simulation
+        function handleElementInteraction(element) {
+            const type = element.dataset.type;
+            
+            switch(type) {
+                case 'main-switch':
+                    toolState.mainSwitch = !toolState.mainSwitch;
+                    element.dataset.state = toolState.mainSwitch ? 'on' : 'off';
+                    if (!toolState.mainSwitch) {
+                        // Turn off motor when main switch is off
+                        toolState.motor = false;
+                        toolState.rpm = 0;
+                        updateAllElements();
+                    }
+                    break;
+                    
+                case 'trigger':
+                    if (toolState.mainSwitch && !toolState.overload) {
+                        toolState.trigger = !toolState.trigger;
+                        toolState.motor = toolState.trigger;
+                        toolState.rpm = toolState.motor ? Math.floor(Math.random() * 1000) + 500 : 0;
+                        element.dataset.state = toolState.trigger ? 'pressed' : 'released';
+                        updateAllElements();
+                    }
+                    break;
+                    
+                case 'direction-switch':
+                    toolState.direction = toolState.direction === 'forward' ? 'reverse' : 'forward';
+                    element.dataset.state = toolState.direction;
+                    break;
+                    
+                case 'led-light':
+                    const ledState = element.dataset.state === 'on' ? 'off' : 'on';
+                    element.dataset.state = ledState;
+                    break;
+            }
+            
+            updateElementAppearance(element);
+        }
+
+        // Update element appearance based on state
+        function updateElementAppearance(element) {
+            const type = element.dataset.type;
+            const state = element.dataset.state;
+            
+            // Remove all state classes
+            element.classList.remove('active', 'warning', 'error', 'motor-running', 'switch-on', 'switch-off');
+            
+            switch(type) {
+                case 'main-switch':
+                    element.classList.add(state === 'on' ? 'switch-on' : 'switch-off');
+                    element.innerHTML = (state === 'on' ? '🟢' : '🔴') + '<br>Main Switch';
+                    break;
+                    
+                case 'motor':
+                    if (toolState.motor && !toolState.overload) {
+                        element.classList.add('motor-running');
+                        element.innerHTML = '⚙️<br>Motor<br>' + toolState.rpm + ' RPM';
+                    } else if (toolState.overload) {
+                        element.classList.add('error');
+                        element.innerHTML = '⚙️<br>Motor<br>OVERLOAD';
+                    } else {
+                        element.innerHTML = '⚙️<br>Motor<br>STOPPED';
+                    }
+                    break;
+                    
+                case 'trigger':
+                    element.classList.add(state === 'pressed' ? 'active' : '');
+                    element.innerHTML = '🔫<br>Trigger<br>' + (state === 'pressed' ? 'PRESSED' : 'RELEASED');
+                    break;
+                    
+                case 'battery-gauge':
+                    const batteryIcon = toolState.battery > 50 ? '🔋' : toolState.battery > 20 ? '🪫' : '⚠️';
+                    const batteryColor = toolState.battery > 20 ? '' : 'warning';
+                    if (batteryColor) element.classList.add(batteryColor);
+                    element.innerHTML = batteryIcon + '<br>Battery<br>' + toolState.battery + '%';
+                    break;
+                    
+                case 'led-light':
+                    element.classList.add(state === 'on' ? 'active' : '');
+                    element.innerHTML = (state === 'on' ? '💡' : '🔦') + '<br>LED<br>' + state.toUpperCase();
+                    break;
+                    
+                case 'rpm-display':
+                    element.innerHTML = '📊<br>RPM<br>' + toolState.rpm;
+                    break;
+                    
+                case 'temperature-sensor':
+                    const tempColor = toolState.temperature > 60 ? 'warning' : '';
+                    if (tempColor) element.classList.add(tempColor);
+                    element.innerHTML = '🌡️<br>Temp<br>' + toolState.temperature + '°C';
+                    break;
+                    
+                case 'overload-protection':
+                    element.classList.add(toolState.overload ? 'error' : '');
+                    element.innerHTML = '🛑<br>Overload<br>' + (toolState.overload ? 'ACTIVE' : 'OK');
+                    break;
+                    
+                case 'direction-switch':
+                    element.innerHTML = '↔️<br>Direction<br>' + toolState.direction.toUpperCase();
+                    break;
+                    
+                case 'cooling-fan':
+                    const fanActive = toolState.motor && toolState.temperature > 40;
+                    if (fanActive) element.classList.add('active');
+                    element.innerHTML = '🌀<br>Fan<br>' + (fanActive ? 'ON' : 'OFF');
+                    break;
+            }
+        }
+
+        // Update all elements
+        function updateAllElements() {
+            const elements = document.querySelectorAll('.dropped-element[data-interactive="true"]');
+            elements.forEach(updateElementAppearance);
+        }
+
+        // Simulation functions
+        function toggleSimulation() {
+            simulationActive = !simulationActive;
+            const btn = event.target;
+            const panel = document.getElementById('simulation-panel');
+            
+            if (simulationActive) {
+                btn.textContent = 'Stop Simulation';
+                btn.classList.remove('btn-warning');
+                btn.classList.add('btn-success');
+                panel.style.display = 'block';
+                updateAllElements();
+                startSimulationLoop();
+            } else {
+                btn.textContent = 'Start Simulation';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-warning');
+                panel.style.display = 'none';
+                resetAllStates();
+            }
+        }
+
+        function startSimulationLoop() {
+            if (!simulationActive) return;
+            
+            // Simulate battery drain
+            if (toolState.motor) {
+                toolState.battery = Math.max(0, toolState.battery - 0.1);
+            }
+            
+            // Simulate temperature changes
+            if (toolState.motor) {
+                toolState.temperature = Math.min(80, toolState.temperature + 0.5);
+            } else {
+                toolState.temperature = Math.max(25, toolState.temperature - 0.2);
+            }
+            
+            updateAllElements();
+            setTimeout(startSimulationLoop, 1000);
+        }
+
+        function simulateMainSwitchToggle() {
+            const mainSwitch = document.querySelector('[data-type="main-switch"]');
+            if (mainSwitch) handleElementInteraction(mainSwitch);
+        }
+
+        function simulateTriggerPress() {
+            const trigger = document.querySelector('[data-type="trigger"]');
+            if (trigger) handleElementInteraction(trigger);
+        }
+
+        function simulateOverload() {
+            toolState.overload = !toolState.overload;
+            if (toolState.overload) {
+                toolState.motor = false;
+                toolState.rpm = 0;
+                toolState.trigger = false;
+            }
+            updateAllElements();
+        }
+
+        function resetAllStates() {
+            toolState = {
+                mainSwitch: false,
+                motor: false,
+                trigger: false,
+                battery: 85,
+                temperature: 25,
+                rpm: 0,
+                overload: false,
+                brake: false,
+                direction: 'forward'
+            };
+            
+            // Reset all element states
+            const elements = document.querySelectorAll('.dropped-element');
+            elements.forEach(element => {
+                element.dataset.state = getInitialState(element.dataset.type);
+                element.classList.remove('active', 'warning', 'error', 'motor-running', 'switch-on', 'switch-off');
+                element.innerHTML = element.dataset.icon || '❓' + '<br>' + getElementDisplayName(element.dataset.type);
+            });
+        }
+
+        // Make elements draggable within canvas
+        function makeElementDraggable(element) {
+            let isDragging = false;
+            let startX, startY, startLeft, startTop;
+
+            element.addEventListener('mousedown', function(e) {
+                if (e.target === this) {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    startLeft = parseInt(this.style.left);
+                    startTop = parseInt(this.style.top);
+                    this.style.zIndex = '1000';
+                    e.preventDefault();
+                }
+            });
+
+            document.addEventListener('mousemove', function(e) {
+                if (isDragging) {
+                    const deltaX = e.clientX - startX;
+                    const deltaY = e.clientY - startY;
+                    const newLeft = startLeft + deltaX;
+                    const newTop = startTop + deltaY;
+                    
+                    const canvas = document.getElementById('hmi-canvas');
+                    const canvasRect = canvas.getBoundingClientRect();
+                    
+                    element.style.left = Math.max(0, Math.min(newLeft, canvasRect.width - 80)) + 'px';
+                    element.style.top = Math.max(0, Math.min(newTop, canvasRect.height - 60)) + 'px';
+                }
+            });
+
+            document.addEventListener('mouseup', function() {
+                if (isDragging) {
+                    isDragging = false;
+                    element.style.zIndex = 'auto';
+                }
+            });
+        }
+
+        // Element selection
+        function selectElement(element) {
+            if (selectedElement) {
+                selectedElement.classList.remove('selected');
+            }
+            selectedElement = element;
+            element.classList.add('selected');
+        }
+
+        // Clear selection when clicking on canvas
+        canvas.addEventListener('click', function(e) {
+            if (e.target === this) {
+                if (selectedElement) {
+                    selectedElement.classList.remove('selected');
+                    selectedElement = null;
+                }
+            }
+        });
+
+        // Clear canvas
+        function clearCanvas() {
+            const canvas = document.getElementById('hmi-canvas');
+            const elements = canvas.querySelectorAll('.dropped-element');
+            elements.forEach(el => el.remove());
+            
+            if (canvas.children.length === 0) {
+                const placeholder = document.createElement('div');
+                placeholder.className = 'canvas-placeholder';
+                placeholder.textContent = 'Drag elements here to build your HMI interface';
+                canvas.appendChild(placeholder);
+            }
+            
+            selectedElement = null;
+        }
+
+        // Export design
+        function exportDesign() {
+            const canvas = document.getElementById('hmi-canvas');
+            const elements = canvas.querySelectorAll('.dropped-element');
+            
+            const design = {
+                canvasSize: {
+                    width: parseInt(canvas.style.width),
+                    height: parseInt(canvas.style.height)
+                },
+                toolType: "Bosch Power Tool",
+                elements: []
+            };
+
+            elements.forEach(el => {
+                design.elements.push({
+                    id: el.dataset.id,
+                    type: el.dataset.type,
+                    position: {
+                        x: parseInt(el.style.left),
+                        y: parseInt(el.style.top)
+                    },
+                    size: {
+                        width: parseInt(el.style.width),
+                        height: parseInt(el.style.height)
+                    },
+                    interactive: el.dataset.interactive === 'true',
+                    state: el.dataset.state
+                });
+            });
+
+            const dataStr = JSON.stringify(design, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'bosch-hmi-design.json';
+            link.click();
+            URL.revokeObjectURL(url);
+
+            alert('Bosch HMI design exported successfully! Check your downloads folder for bosch-hmi-design.json');
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Delete' && selectedElement) {
+                selectedElement.remove();
+                selectedElement = null;
+                
+                const canvas = document.getElementById('hmi-canvas');
+                if (canvas.children.length === 0) {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'canvas-placeholder';
+                    placeholder.textContent = 'Drag elements here to build your HMI interface';
+                    canvas.appendChild(placeholder);
+                }
+            }
+        });
+
+        // Initialize canvas
+        updateCanvasSize();
+    </script>
+</body>
+</html>
