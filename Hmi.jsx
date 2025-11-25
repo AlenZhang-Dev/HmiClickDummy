@@ -800,12 +800,8 @@ function IndustrialScreenContent({
     };
     
     const handleLockMouseDown = (e) => {
-        // Tool Lock button should be the only button that can activate Lock when not locked, 
-        // or clear it via long press. However, for simplicity, we are tying the 
-        // long press logic to the +/- buttons, simulating a control panel sequence.
-        
-        // Interaction disabled should NOT block long press if the intent is to clear the lock.
-        // We will only block if Power is OFF or a hard error prevents *any* action.
+        // 长按逻辑：只在电源关闭或硬件错误时禁用
+        // 即使 Tool Lock 激活，也允许长按来解锁
         if (!isOn || isLocked) return; 
 
         e.preventDefault();
@@ -823,8 +819,12 @@ function IndustrialScreenContent({
     };
     
     const handlePlusMinusClick = (delta) => {
+        // 点击操作：检查是否被禁用
+        // 如果 Tool Lock 激活 (indStatus.isLocked)，则禁用点击调节
+        if (isInteractionDisabled) return;
+        
+        // 如果正在长按，不执行点击操作
         if (!lockTimer) {
-             // Use the simplified sequence logic
              adjustCurrentTorqueSelection(delta); 
         }
     }
@@ -907,10 +907,10 @@ function IndustrialScreenContent({
                     onMouseUp={handleLockMouseUp}
                     onTouchStart={handleLockMouseDown}
                     onTouchEnd={handleLockMouseUp}
-                    // Only disable if interaction is disabled (Tool Lock / Power Off)
-                    disabled={isInteractionDisabled} 
+                    // 不设置 disabled，让长按事件始终可以触发
+                    // 通过 CSS 类名显示禁用状态
                     className={`w-20 h-20 rounded-xl border-2 border-zinc-700 bg-zinc-800 transition-all duration-150 shadow-md flex items-center justify-center text-zinc-400 hover:text-white 
-                        ${(isInteractionDisabled) ? 'opacity-40 cursor-not-allowed' : 'active:bg-zinc-700 cursor-pointer'}
+                        ${isInteractionDisabled ? 'opacity-40' : 'active:bg-zinc-700'} cursor-pointer
                     `}
                 >
                     <Minus size={40} className="stroke-[3]" />
@@ -939,19 +939,26 @@ function IndustrialScreenContent({
                     onMouseUp={handleLockMouseUp}
                     onTouchStart={handleLockMouseDown}
                     onTouchEnd={handleLockMouseUp}
-                    // Only disable if interaction is disabled (Tool Lock / Power Off)
-                    disabled={isInteractionDisabled} 
+                    // 不设置 disabled，让长按事件始终可以触发
+                    // 通过 CSS 类名显示禁用状态
                     className={`w-20 h-20 rounded-xl border-2 border-zinc-700 bg-zinc-800 transition-all duration-150 shadow-md flex items-center justify-center text-zinc-400 hover:text-white 
-                        ${(isInteractionDisabled) ? 'opacity-40 cursor-not-allowed' : 'active:bg-zinc-700 cursor-pointer'}
+                        ${isInteractionDisabled ? 'opacity-40' : 'active:bg-zinc-700'} cursor-pointer
                     `}
                 >
                     <Plus size={40} className="stroke-[3]" />
                 </button>
             </div>
-            {/* Show Lock Press Status */}
+            
+            {/* Lock Status Indicators */}
             {lockTimer && (
-              <p className="text-zinc-500 text-xs mt-2 absolute bottom-2">
-                长按 ({Math.round(LONG_PRESS_DELAY / 1000)}s) 触发 Tool Lock...
+              <p className="text-blue-400 text-xs mt-2 animate-pulse">
+                长按 {Math.round(LONG_PRESS_DELAY / 1000)}s {indStatus.isLocked ? '解锁' : '锁定'} Tool Lock...
+              </p>
+            )}
+            
+            {indStatus.isLocked && !lockTimer && (
+              <p className="text-yellow-400 text-xs mt-2">
+                🔒 已锁定 - 长按 +/- 按钮 3秒 解锁
               </p>
             )}
 
