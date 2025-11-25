@@ -835,12 +835,6 @@ function IndustrialScreenContent({
     // 根据选中的挡位类型，确定 HMI 上实际显示的字符或数字
     let hmiDisplayValue = currentTorqueSelection;
 
-    // 确定底部的文字标签
-    const bottomLabel = typeof currentTorqueSelection === 'string' 
-        ? `CUSTOM LEVEL: ${currentTorqueSelection}`
-        : `TORQUE VALUE: ${currentTorqueSelection}N (Max ${maxLimit}N)`;
-
-
     // Icon definitions with dynamic styling
     const indicators = [
         // 1. Tool Lock (T)
@@ -918,9 +912,6 @@ function IndustrialScreenContent({
 
                 {/* Torque Level Display (7-Segment) */}
                 <div className="flex flex-col items-center">
-                    <span className="text-zinc-500 text-[10px] font-bold tracking-wider mb-1 uppercase">
-                        CURRENT TORQUE LEVEL (当前扭矩)
-                    </span>
                     <div className="w-36 h-24 bg-black p-1 rounded-sm border border-zinc-700/50 flex items-center justify-center">
                         <SevenSegmentDisplay 
                             value={hmiDisplayValue} // 使用 hmiDisplayValue (可能是数字或 'C1'/'C2'/'C3' 字符串)
@@ -928,8 +919,6 @@ function IndustrialScreenContent({
                             inactiveColor="bg-zinc-900/50" 
                         />
                     </div>
-                    {/* Simplified: Removed Sub-Level Indicator */}
-                    <div className="h-3 mt-1"></div> 
                 </div>
 
                 {/* Plus Button */}
@@ -948,24 +937,6 @@ function IndustrialScreenContent({
                     <Plus size={40} className="stroke-[3]" />
                 </button>
             </div>
-            
-            {/* Lock Status Indicators */}
-            {lockTimer && (
-              <p className="text-blue-400 text-xs mt-2 animate-pulse">
-                长按 {Math.round(LONG_PRESS_DELAY / 1000)}s {indStatus.isLocked ? '解锁' : '锁定'} Tool Lock...
-              </p>
-            )}
-            
-            {indStatus.isLocked && !lockTimer && (
-              <p className="text-yellow-400 text-xs mt-2">
-                🔒 已锁定 - 长按 +/- 按钮 3秒 解锁
-              </p>
-            )}
-
-            {/* Bottom Status Label */}
-            <span className="text-zinc-500 text-[10px] font-bold tracking-wider mt-1 uppercase text-center">
-                {bottomLabel}
-            </span>
             
         </div>
     );
