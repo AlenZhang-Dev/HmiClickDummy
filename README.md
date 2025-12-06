@@ -172,44 +172,30 @@ Tailwind is configured to scan all relevant files for class names. Customize in 
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
 
-## � Deployment
+## 🚀 Deployment
 
-### Quick Deploy (5 minutes)
+### Deploy to Vercel (5 minutes)
 
-**Recommended: Vercel (Free & Easiest)**
-
-1. Push to GitHub:
+1. **Push to GitHub:**
    ```bash
+   git add .
+   git commit -m "Ready for deployment"
    git push origin main
    ```
 
-2. Visit [vercel.com](https://vercel.com)
-   - Import your GitHub repository
+2. **Deploy on Vercel:**
+   - Visit [vercel.com](https://vercel.com)
+   - Sign in with GitHub
+   - Click "New Project"
+   - Import your repository
    - Click "Deploy"
-   - Done! Get your live URL
+   - Done! Get your live URL instantly
 
-**Using Deploy Script:**
-```bash
-./deploy.sh vercel  # Deploy to Vercel
-./deploy.sh netlify # Deploy to Netlify
-./deploy.sh docker  # Build Docker image
-```
+📖 **Deployment guides**: 
+- [QUICK_DEPLOY.md](./QUICK_DEPLOY.md) - Quick 3-step guide
+- [DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md) - Comprehensive Vercel deployment guide
 
-**Pre-deployment Check:**
-```bash
-./check-deployment.sh  # Automated deployment readiness check
-```
-
-📖 **Full deployment guide**: See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions including:
-- Vercel deployment (recommended)
-- GitHub Pages
-- Netlify
-- Docker
-- Self-hosted server (Nginx)
-
-⚡ **Quick start**: See [QUICK_DEPLOY.md](./QUICK_DEPLOY.md)
-
-## �🐛 Troubleshooting
+## 🐛 Troubleshooting
 
 ### Port Already in Use
 
