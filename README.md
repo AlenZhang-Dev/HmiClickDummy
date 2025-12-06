@@ -172,7 +172,44 @@ Tailwind is configured to scan all relevant files for class names. Customize in 
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
 
-## 🐛 Troubleshooting
+## � Deployment
+
+### Quick Deploy (5 minutes)
+
+**Recommended: Vercel (Free & Easiest)**
+
+1. Push to GitHub:
+   ```bash
+   git push origin main
+   ```
+
+2. Visit [vercel.com](https://vercel.com)
+   - Import your GitHub repository
+   - Click "Deploy"
+   - Done! Get your live URL
+
+**Using Deploy Script:**
+```bash
+./deploy.sh vercel  # Deploy to Vercel
+./deploy.sh netlify # Deploy to Netlify
+./deploy.sh docker  # Build Docker image
+```
+
+**Pre-deployment Check:**
+```bash
+./check-deployment.sh  # Automated deployment readiness check
+```
+
+📖 **Full deployment guide**: See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions including:
+- Vercel deployment (recommended)
+- GitHub Pages
+- Netlify
+- Docker
+- Self-hosted server (Nginx)
+
+⚡ **Quick start**: See [QUICK_DEPLOY.md](./QUICK_DEPLOY.md)
+
+## �🐛 Troubleshooting
 
 ### Port Already in Use
 

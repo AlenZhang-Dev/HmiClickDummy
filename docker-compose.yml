@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  hmi-simulator:
+    build: .
+    container_name: hmi-simulator
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    networks:
+      - hmi-network
+
+networks:
+  hmi-network:
+    driver: bridge
