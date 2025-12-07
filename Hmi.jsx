@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import SevenSegmentDisplay from './src/shared/components/SevenSegmentDisplay';
 import ModeButton from './src/shared/components/ModeButton';
+import { StatusButton, IndStatusButton } from './src/shared/components/StatusButton';
 
 // AC Hammer HMI Standard Component
 export default function ElectricToolHMI() {
@@ -832,42 +833,3 @@ function IndustrialScreenContent({
 }
 
 
-/**
- * Status simulation button on the Control Panel (For Hammer Variants)
- */
-function StatusButton({ status, currentStatus, onClick, icon, label, color }) {
-  const isSelected = status === currentStatus;
-  
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200
-        ${isSelected ? `${color} text-white scale-105 ring-2 ring-offset-2 ring-offset-slate-700 ring-white` : 'bg-slate-600 text-slate-300 hover:bg-slate-500'}
-      `}
-    >
-      <div className="mb-1">{icon}</div>
-      <span className="text-[10px] font-bold">{label}</span>
-    </button>
-  );
-}
-
-/**
- * Status toggle button on the Control Panel (For Industrial Variant)
- */
-function IndStatusButton({ statusKey, isActive, onClick, Icon, label }) {
-  return (
-    <button
-      onClick={() => onClick(statusKey)}
-      className={`
-        flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200
-        ${isActive ? 'bg-blue-600 text-white scale-105 ring-2 ring-offset-2 ring-offset-slate-700 ring-white' : 'bg-slate-600 text-slate-300 hover:bg-slate-500'}
-      `}
-    >
-      <div className="mb-1">
-        <Icon size={24} />
-      </div>
-      <span className="text-[10px] font-bold">{label}</span>
-    </button>
-  );
-}
