@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { 
   Settings, Power, Layout, CheckCircle, AlertTriangle, XCircle, ShieldAlert, Wrench, Info
@@ -13,10 +13,11 @@ import { hasFeature } from '../../../variants/registry';
  * 
  * Unified control panel for all HMI variants.
  * Provides controls for power, variant selection, status simulation, and variant-specific settings.
+ * Optimized with React.memo and useMemo for performance.
  * 
  * @component
  */
-const ControlPanel = ({
+const ControlPanel = React.memo(({
   // Power & Variant
   isOn,
   onTogglePower,
@@ -44,12 +45,21 @@ const ControlPanel = ({
   onCycleCountChange,
   isMaintenanceNeeded,
 }) => {
-  // Determine the track color for the battery slider
-  const sliderTrackColor = getBatterySliderColor(batteryLevel);
+  // Memoize expensive calculations
+  const sliderTrackColor = useMemo(
+    () => getBatterySliderColor(batteryLevel),
+    [batteryLevel]
+  );
   
-  // Check if this is an industrial variant
-  const isIndustrial = hasFeature(hmiVariant, 'hasIndustrialStatus');
-  const hasSegmentedDisplay = hasFeature(hmiVariant, 'hasSegmentedDisplay');
+  const isIndustrial = useMemo(
+    () => hasFeature(hmiVariant, 'hasIndustrialStatus'),
+    [hmiVariant]
+  );
+  
+  const hasSegmentedDisplay = useMemo(
+    () => hasFeature(hmiVariant, 'hasSegmentedDisplay'),
+    [hmiVariant]
+  );
 
   return (
     <div className="mt-6 w-full max-w-md bg-slate-700 rounded-xl p-6 shadow-lg text-white space-y-6">
@@ -335,7 +345,9 @@ const ControlPanel = ({
       
     </div>
   );
-};
+});
+
+ControlPanel.displayName = 'ControlPanel';
 
 ControlPanel.propTypes = {
   // Power & Variant

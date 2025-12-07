@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import ModeButton from './src/shared/components/ModeButton';
 import ControlPanel from './src/shared/components/ControlPanel';
 import ACHammerScreenContent from './src/variants/ACHammer';
@@ -135,8 +135,8 @@ export default function ElectricToolHMI() {
     setMode(selectedMode);
   };
 
-  // Build centralized state object for props builders
-  const state = buildStateObject({
+  // Build centralized state object for props builders (memoized for performance)
+  const state = useMemo(() => buildStateObject({
     // Power & Variant
     isOn,
     togglePower,
@@ -169,7 +169,11 @@ export default function ElectricToolHMI() {
     toggleCustomLevelActivation,
     cycleCount,
     setCycleCount,
-  });
+  }), [
+    isOn, hmiVariant, mode, toolStatus, isLocked, isInteractionDisabled,
+    batteryLevel, maxTorqueLimit, indStatus, isMaintenanceNeeded,
+    currentTorqueSelection, customLevels, cycleCount,
+  ]);
 
   return (
     <div className={MAIN_CONTAINER_CLASSES}>
