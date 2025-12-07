@@ -11,6 +11,7 @@ import ACHammerScreenContent from './src/variants/ACHammer';
 import DCHammerScreenContent from './src/variants/DCHammer';
 import IndustrialScreenContent from './src/variants/Industrial';
 import { getBatterySliderColor } from './src/shared/utils/statusUtils';
+import { getVariantComponent, hasFeature } from './src/variants/registry';
 
 // AC Hammer HMI Standard Component
 export default function ElectricToolHMI() {
@@ -176,23 +177,24 @@ export default function ElectricToolHMI() {
         
         {/* Top Status Indicator Area (Top Bar / Status Area) */}
         <div className="relative z-0 bg-zinc-900 border-b-4 border-black">
-            
-            {hmiVariant === 'standard' ? (
-                // --- STANDARD: Single Solid Bar (AC Hammer) ---
-                <ACHammerScreenContent isOn={isOn} toolStatus={toolStatus} />
-            ) : hmiVariant === 'segmented' ? (
-                // --- SEGMENTED: 5 Bars Layout (DC Hammer: Battery or Status Override) ---
-                <DCHammerScreenContent isOn={isOn} toolStatus={toolStatus} batteryLevel={batteryLevel} />
-            ) : (
-                // --- INDUSTRIAL: Top Status Bar (Same as AC Hammer) ---
-                <ACHammerScreenContent isOn={isOn} toolStatus={toolStatus} />
-            )}
+            {(() => {
+              // Get the appropriate status bar component for the current variant
+              const TopBarComponent = hmiVariant === 'segmented' 
+                ? DCHammerScreenContent 
+                : ACHammerScreenContent; // AC Hammer and Industrial use same top bar
+              
+              return hasFeature(hmiVariant, 'hasSegmentedDisplay') ? (
+                <TopBarComponent isOn={isOn} toolStatus={toolStatus} batteryLevel={batteryLevel} />
+              ) : (
+                <TopBarComponent isOn={isOn} toolStatus={toolStatus} />
+              );
+            })()}
         </div>
 
         {/* HMI Screen Display Area (Black Background) */}
         <div className={`relative bg-black p-8 transition-all duration-500 ${isOn ? 'opacity-100' : 'opacity-50 grayscale'}`}>
           
-          {hmiVariant === 'industrial' ? (
+          {hasFeature(hmiVariant, 'hasIndustrialStatus') ? (
               // --- INDUSTRIAL TOOL HMI CONTENT ---
               <IndustrialScreenContent 
                   maxLimit={maxTorqueLimit} // Max limit for boundary check
@@ -298,8 +300,8 @@ export default function ElectricToolHMI() {
           </div>
         </div>
         
-        {/* --- Tool Status Simulator (Hammer) --- (omitted for brevity) */}
-        {hmiVariant !== 'industrial' && (
+        {/* --- Tool Status Simulator (Hammer) --- */}
+        {!hasFeature(hmiVariant, 'hasIndustrialStatus') && (
            <div className={`transition-opacity duration-300 ${!isOn ? 'opacity-50 pointer-events-none' : ''}`}>
              <div className="text-slate-400 text-xs font-bold uppercase mb-3 tracking-wider">Hammer Signal Simulation (信号模拟)</div>
              <div className="grid grid-cols-4 gap-2">
@@ -323,7 +325,7 @@ export default function ElectricToolHMI() {
                {isLocked && "⚠️ Safety Interlock Active: Controls Disabled"}
              </div>
              {/* Battery Level Simulation (DC Hammer) */}
-             {hmiVariant === 'segmented' && (
+             {hasFeature(hmiVariant, 'hasSegmentedDisplay') && (
                  <div className="pt-4 border-t border-slate-600 mt-4">
                      <div className="text-slate-400 text-xs font-bold uppercase mb-3 tracking-wider">DC Hammer: Battery Level ({batteryLevel}%)</div>
                      <input
@@ -352,7 +354,7 @@ export default function ElectricToolHMI() {
         )}
         
         {/* --- Industrial Tool Controls --- */}
-        {hmiVariant === 'industrial' && (
+        {hasFeature(hmiVariant, 'hasIndustrialStatus') && (
              <div className={`transition-opacity duration-300 ${!isOn ? 'opacity-50 pointer-events-none' : ''}`}>
                  <div className="text-slate-400 text-xs font-bold uppercase mb-3 tracking-wider">Industrial Signal Simulation (工业信号模拟)</div>
                  
