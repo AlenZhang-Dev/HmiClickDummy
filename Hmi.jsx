@@ -7,6 +7,7 @@ import SevenSegmentDisplay from './src/shared/components/SevenSegmentDisplay';
 import ModeButton from './src/shared/components/ModeButton';
 import { StatusButton, IndStatusButton } from './src/shared/components/StatusButton';
 import CustomLevelConfig from './src/shared/components/CustomLevelConfig';
+import ACHammerScreenContent from './src/variants/ACHammer';
 
 // AC Hammer HMI Standard Component
 export default function ElectricToolHMI() {
@@ -143,20 +144,6 @@ export default function ElectricToolHMI() {
     }
   };
 
-  // Get full style for Standard (Single Bar) - AC Hammer
-  const getSingleBarClass = () => {
-    if (!isOn) return 'bg-slate-400';
-    let base = "";
-    switch (toolStatus) {
-      case 'normal': base = 'bg-green-500 shadow-[0_0_20px_rgba(34,197,94,0.4)]'; break;
-      case 'warning': base = 'bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.4)]'; break;
-      case 'error': base = 'bg-red-600 shadow-[0_0_20px_rgba(220,38,38,0.4)]'; break;
-      case 'safety_error': base = 'bg-red-600 shadow-[0_0_30px_rgba(220,38,38,0.8)] animate-blink-2hz'; break;
-      default: base = 'bg-blue-100';
-    }
-    return base;
-  };
-
   // Get style for a single bar in Segmented (5-Bar) - DC Hammer (Used for Status Override only)
   const getSegmentBarClass = () => {
     if (!isOn) return 'bg-slate-600 opacity-30'; 
@@ -169,17 +156,6 @@ export default function ElectricToolHMI() {
     const animation = toolStatus === 'safety_error' ? 'animate-blink-2hz' : '';
     
     return `${baseColor} ${shadow} ${animation}`;
-  };
-
-  // Get display text for status (for AC Hammer)
-  const getStatusLabel = () => {
-    switch (toolStatus) {
-      case 'normal': return 'NORMAL';
-      case 'warning': return 'WARNING';
-      case 'error': return 'ERROR';
-      case 'safety_error': return 'SAFETY STOP';
-      default: return '';
-    }
   };
 
   // Helper function for DC Hammer (Segmented) battery display logic
@@ -261,11 +237,7 @@ export default function ElectricToolHMI() {
             
             {hmiVariant === 'standard' ? (
                 // --- STANDARD: Single Solid Bar (AC Hammer) ---
-                <div className={`h-16 flex items-center justify-center transition-colors duration-300 ${getSingleBarClass()}`}>
-                    <span className="text-slate-900/70 font-black tracking-widest text-xl mix-blend-multiply">
-                        {isOn ? getStatusLabel() : 'OFF'}
-                    </span>
-                </div>
+                <ACHammerScreenContent isOn={isOn} toolStatus={toolStatus} />
             ) : hmiVariant === 'segmented' ? (
                 // --- SEGMENTED: 5 Bars Layout (DC Hammer: Battery or Status Override) ---
                 <div className="h-16 flex items-center justify-center gap-3 px-8 bg-zinc-900">
