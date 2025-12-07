@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import ModeButton from './src/shared/components/ModeButton';
-import SevenSegmentDisplay from './src/shared/components/SevenSegmentDisplay';
-import ModeButton from './src/shared/components/ModeButton';
 import ControlPanel from './src/shared/components/ControlPanel';
 import ACHammerScreenContent from './src/variants/ACHammer';
 import DCHammerScreenContent from './src/variants/DCHammer';
 import IndustrialScreenContent from './src/variants/Industrial';
 import { getVariantComponent, hasFeature } from './src/variants/registry';
+import { 
+  buildIndustrialProps, 
+  buildModeButtonProps, 
+  buildTopBarProps, 
+  buildControlPanelProps,
+  buildStateObject 
+} from './src/shared/utils/propsBuilder';
 
 // AC Hammer HMI Standard Component
 export default function ElectricToolHMI() {
@@ -132,6 +137,42 @@ export default function ElectricToolHMI() {
     setMode(selectedMode);
   };
 
+  // Build centralized state object for props builders
+  const state = buildStateObject({
+    // Power & Variant
+    isOn,
+    togglePower,
+    hmiVariant,
+    setHmiVariant,
+    
+    // Hammer Controls
+    mode,
+    handleModeSelect,
+    toolStatus,
+    setToolStatus,
+    isLocked,
+    isInteractionDisabled,
+    
+    // Battery
+    batteryLevel,
+    setBatteryLevel,
+    
+    // Industrial Controls
+    maxTorqueLimit,
+    indStatus,
+    setIndStatus,
+    isMaintenanceNeeded,
+    handleLimitChange,
+    currentTorqueSelection,
+    setCurrentTorqueSelection,
+    customLevels,
+    setCustomLevels,
+    toggleIndStatus,
+    toggleCustomLevelActivation,
+    cycleCount,
+    setCycleCount,
+  });
+
   return (
     <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center p-4 font-sans select-none">
       
@@ -174,11 +215,10 @@ export default function ElectricToolHMI() {
                 ? DCHammerScreenContent 
                 : ACHammerScreenContent; // AC Hammer and Industrial use same top bar
               
-              return hasFeature(hmiVariant, 'hasSegmentedDisplay') ? (
-                <TopBarComponent isOn={isOn} toolStatus={toolStatus} batteryLevel={batteryLevel} />
-              ) : (
-                <TopBarComponent isOn={isOn} toolStatus={toolStatus} />
-              );
+              const hasSegmentedDisplay = hasFeature(hmiVariant, 'hasSegmentedDisplay');
+              const topBarProps = buildTopBarProps(state, hasSegmentedDisplay);
+              
+              return <TopBarComponent {...topBarProps} />;
             })()}
         </div>
 
@@ -187,37 +227,12 @@ export default function ElectricToolHMI() {
           
           {hasFeature(hmiVariant, 'hasIndustrialStatus') ? (
               // --- INDUSTRIAL TOOL HMI CONTENT ---
-              <IndustrialScreenContent 
-                  maxLimit={maxTorqueLimit} // Max limit for boundary check
-                  indStatus={indStatus} 
-                  setIndStatus={setIndStatus} // Pass setter for long press logic
-                  batteryLevel={batteryLevel} 
-                  isMaintenanceNeeded={isMaintenanceNeeded} 
-                  isInteractionDisabled={isInteractionDisabled}
-                  isOn={isOn}
-                  isLocked={isLocked}
-                  
-                  // New Props for Custom Torque
-                  currentTorqueSelection={currentTorqueSelection}
-                  setCurrentTorqueSelection={setCurrentTorqueSelection}
-                  customLevels={customLevels}
-                  setCustomLevels={setCustomLevels}
-              />
+              <IndustrialScreenContent {...buildIndustrialProps(state)} />
           ) : (
               // --- HAMMER TOOL HMI CONTENT (Max/Soft Buttons) ---
               <div className="flex justify-between items-center gap-12">
-                <ModeButton 
-                  type="max"
-                  isActive={mode === 'max'}
-                  onClick={() => handleModeSelect('max')}
-                  disabled={isInteractionDisabled}
-                />
-                <ModeButton 
-                  type="soft"
-                  isActive={mode === 'soft'}
-                  onClick={() => handleModeSelect('soft')}
-                  disabled={isInteractionDisabled}
-                />
+                <ModeButton {...buildModeButtonProps(state, 'max')} />
+                <ModeButton {...buildModeButtonProps(state, 'soft')} />
               </div>
           )}
 
@@ -243,34 +258,7 @@ export default function ElectricToolHMI() {
       </div>
 
       {/* --- Interaction Control Panel --- */}
-      <ControlPanel
-        // Power & Variant
-        isOn={isOn}
-        onTogglePower={togglePower}
-        hmiVariant={hmiVariant}
-        onVariantChange={setHmiVariant}
-        
-        // Hammer Controls
-        toolStatus={toolStatus}
-        onToolStatusChange={setToolStatus}
-        mode={mode}
-        isLocked={isLocked}
-        
-        // Battery (DC Hammer & Industrial)
-        batteryLevel={batteryLevel}
-        onBatteryLevelChange={setBatteryLevel}
-        
-        // Industrial Controls
-        indStatus={indStatus}
-        onToggleIndStatus={toggleIndStatus}
-        maxTorqueLimit={maxTorqueLimit}
-        onMaxTorqueLimitChange={handleLimitChange}
-        customLevels={customLevels}
-        onToggleCustomLevelActivation={toggleCustomLevelActivation}
-        cycleCount={cycleCount}
-        onCycleCountChange={setCycleCount}
-        isMaintenanceNeeded={isMaintenanceNeeded}
-      />
+      <ControlPanel {...buildControlPanelProps(state)} />
     </div>
   );
 }
