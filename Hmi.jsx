@@ -4,6 +4,7 @@ import {
   Lock, Shield, ZapOff, Wrench, Info, Plus, Minus
 } from 'lucide-react';
 import SevenSegmentDisplay from './src/shared/components/SevenSegmentDisplay';
+import ModeButton from './src/shared/components/ModeButton';
 
 // AC Hammer HMI Standard Component
 export default function ElectricToolHMI() {
@@ -855,7 +856,6 @@ function StatusButton({ status, currentStatus, onClick, icon, label, color }) {
  * Status toggle button on the Control Panel (For Industrial Variant)
  */
 function IndStatusButton({ statusKey, isActive, onClick, Icon, label }) {
-  
   return (
     <button
       onClick={() => onClick(statusKey)}
@@ -868,89 +868,6 @@ function IndStatusButton({ statusKey, isActive, onClick, Icon, label }) {
         <Icon size={24} />
       </div>
       <span className="text-[10px] font-bold">{label}</span>
-    </button>
-  );
-}
-
-/**
- * Mode Button Component (Inside HMI Screen - For Hammer Variants)
- */
-function ModeButton({ type, isActive, onClick, disabled }) {
-  const isMax = type === 'max';
-  const label = isMax ? '100%' : '70%';
-  
-  let containerStyle = "";
-  let contentStyle = "";
-  let barColor = "";
-
-  if (disabled) {
-    if (isActive) {
-        containerStyle = "border-zinc-600 bg-zinc-800 opacity-60 cursor-not-allowed";
-        contentStyle = "text-zinc-500";
-        barColor = "bg-zinc-500";
-    } else {
-        containerStyle = "border-zinc-800 bg-transparent opacity-20 cursor-not-allowed";
-        contentStyle = "text-zinc-700";
-        barColor = "bg-zinc-800";
-    }
-  } else {
-    if (isActive) {
-        containerStyle = "border-slate-300 bg-zinc-800 shadow-[0_0_15px_rgba(255,255,255,0.1)] cursor-pointer";
-        contentStyle = "text-slate-200";
-        barColor = "bg-slate-300";
-    } else {
-        containerStyle = "border-zinc-700 bg-transparent opacity-40 hover:opacity-60 cursor-pointer";
-        contentStyle = "text-zinc-600";
-        barColor = "bg-zinc-700";
-    }
-  }
-
-  return (
-    <button 
-      onClick={onClick}
-      disabled={disabled}
-      className={`
-        flex-1 aspect-square rounded-sm border-[4px] 
-        flex flex-col items-center justify-between p-3 
-        transition-all duration-300 outline-none
-        ${containerStyle}
-      `}
-    >
-      
-      {/* Icon Area */}
-      <div className="flex items-end justify-center gap-1.5 h-1/2 w-full mt-2">
-        {/* Bar 1 */}
-        <div 
-          className={`w-1/4 transition-colors duration-300 ${barColor}`} 
-          style={{ 
-            height: '35%', 
-            clipPath: 'polygon(0 30%, 100% 0, 100% 100%, 0% 100%)'
-          }} 
-        />
-        
-        {/* Bar 2 */}
-        <div 
-          className={`w-1/4 transition-colors duration-300 ${barColor}`} 
-          style={{ 
-            height: isMax ? '65%' : '50%', 
-            clipPath: 'polygon(0 30%, 100% 0, 100% 100%, 0% 100%)'
-          }} 
-        />
-        
-        {/* Bar 3 */}
-        <div 
-          className={`w-1/4 transition-colors duration-300 ${barColor}`} 
-          style={{ 
-            height: isMax ? '100%' : '65%',
-            clipPath: 'polygon(0 30%, 100% 0, 100% 100%, 0% 100%)'
-          }} 
-        />
-      </div>
-
-      {/* Value Display */}
-      <div className={`font-bold text-3xl font-mono tracking-tighter transition-colors duration-300 ${contentStyle}`}>
-        {label}
-      </div>
     </button>
   );
 }
