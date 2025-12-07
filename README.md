@@ -195,7 +195,25 @@ Tailwind is configured to scan all relevant files for class names. Customize in 
 - [QUICK_DEPLOY.md](./QUICK_DEPLOY.md) - Quick 3-step guide
 - [DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md) - Comprehensive Vercel deployment guide
 
-## 🐛 Troubleshooting
+## � Architecture & Optimization
+
+**Current Status**: The project is undergoing architecture optimization to improve code reusability and maintainability.
+
+📚 **Optimization Documentation**:
+- [OPTIMIZATION_PLAN.md](./docs/OPTIMIZATION_PLAN.md) - Comprehensive optimization strategy (5 phases)
+- [OPTIMIZATION_CHECKLIST.md](./docs/OPTIMIZATION_CHECKLIST.md) - Step-by-step task checklist
+- [ARCHITECTURE_COMPARISON.md](./docs/ARCHITECTURE_COMPARISON.md) - Before/After architecture comparison
+
+**Key Improvements**:
+- ✅ Component modularization (reduce main file from 1068 to <200 lines)
+- ✅ State management refactoring (useReducer)
+- ✅ Custom Hooks extraction
+- ✅ Type safety enhancement (PropTypes)
+- ✅ Performance optimization
+
+**Branch**: `Optimization/Re-structure-module`
+
+## �🐛 Troubleshooting
 
 ### Port Already in Use
 
