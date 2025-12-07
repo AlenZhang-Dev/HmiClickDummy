@@ -145,6 +145,30 @@ export default function ElectricToolHMI() {
     }
   };
 
+  // Temporary helper for Industrial variant (will be removed in Task 1.2.3)
+  const getSingleBarClass = () => {
+    if (!isOn) return 'bg-slate-400';
+    let base = "";
+    switch (toolStatus) {
+      case 'normal': base = 'bg-green-500 shadow-[0_0_20px_rgba(34,197,94,0.4)]'; break;
+      case 'warning': base = 'bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.4)]'; break;
+      case 'error': base = 'bg-red-600 shadow-[0_0_20px_rgba(220,38,38,0.4)]'; break;
+      case 'safety_error': base = 'bg-red-600 shadow-[0_0_30px_rgba(220,38,38,0.8)] animate-blink-2hz'; break;
+      default: base = 'bg-blue-100';
+    }
+    return base;
+  };
+
+  const getStatusLabel = () => {
+    switch (toolStatus) {
+      case 'normal': return 'NORMAL';
+      case 'warning': return 'WARNING';
+      case 'error': return 'ERROR';
+      case 'safety_error': return 'SAFETY STOP';
+      default: return '';
+    }
+  };
+
   // Determine the track color for the battery slider
   let sliderTrackColor = '#10b981'; // Green (default)
   if (batteryLevel <= 1) {
