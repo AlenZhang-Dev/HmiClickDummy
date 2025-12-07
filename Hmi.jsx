@@ -12,71 +12,77 @@ import {
   buildControlPanelProps,
   buildStateObject 
 } from './src/shared/utils/propsBuilder';
+import {
+  DEFAULT_POWER_STATE,
+  DEFAULT_MODE,
+  DEFAULT_HMI_VARIANT,
+  DEFAULT_TOOL_STATUS,
+  DEFAULT_BATTERY_LEVEL,
+  DEFAULT_MAX_TORQUE_LIMIT,
+  DEFAULT_CUSTOM_LEVELS,
+  DEFAULT_TORQUE_SELECTION,
+  DEFAULT_IND_STATUS,
+  DEFAULT_CYCLE_COUNT,
+  MAINTENANCE_CYCLE_THRESHOLD,
+  HMI_VARIANTS,
+  TOOL_STATUS_TYPES,
+  MAIN_CONTAINER_CLASSES,
+  DEVICE_CASING_CLASSES,
+  TOP_BAR_CONTAINER_CLASSES,
+  getScreenDisplayClasses,
+  HAMMER_BUTTONS_CONTAINER_CLASSES,
+  POWER_INDICATOR_CONTAINER_CLASSES,
+  POWER_INDICATOR_TEXT_CLASSES,
+  getPowerLedClasses,
+  LOCK_OVERLAY_CONTAINER_CLASSES,
+  LOCK_OVERLAY_BADGE_CLASSES,
+  LOCK_OVERLAY_TEXT_CLASSES,
+  CUSTOM_STYLES,
+  isToolLocked,
+  isInteractionDisabled as checkInteractionDisabled,
+} from './src/shared/constants';
 
 // AC Hammer HMI Standard Component
 export default function ElectricToolHMI() {
   // --- Global States ---
-  const [isOn, setIsOn] = useState(true);      // Power status
-  const [mode, setMode] = useState('max');     // Mode: 'max' | 'soft' (for Hammer variants)
-  // hmiVariant: 'standard' (AC Hammer) | 'segmented' (DC Hammer) | 'industrial' (New)
-  const [hmiVariant, setHmiVariant] = useState('industrial'); 
-  
-  // Tool status: 'normal' | 'warning' | 'error' | 'safety_error'
-  const [toolStatus, setToolStatus] = useState('normal'); 
-  const [batteryLevel, setBatteryLevel] = useState(85); // For DC Hammer and Industrial Low Battery Indicator
+  const [isOn, setIsOn] = useState(DEFAULT_POWER_STATE);
+  const [mode, setMode] = useState(DEFAULT_MODE);
+  const [hmiVariant, setHmiVariant] = useState(DEFAULT_HMI_VARIANT);
+  const [toolStatus, setToolStatus] = useState(DEFAULT_TOOL_STATUS);
+  const [batteryLevel, setBatteryLevel] = useState(DEFAULT_BATTERY_LEVEL);
 
-  // --- Industrial Tool States (New) ---
-  // 1. Max Torque Limit (N): Set by control panel slider. The absolute maximum level.
-  const [maxTorqueLimit, setMaxTorqueLimit] = useState(50);
+  // --- Industrial Tool States ---
+  const [maxTorqueLimit, setMaxTorqueLimit] = useState(DEFAULT_MAX_TORQUE_LIMIT);
+  const [customLevels, setCustomLevels] = useState(DEFAULT_CUSTOM_LEVELS);
+  const [currentTorqueSelection, setCurrentTorqueSelection] = useState(DEFAULT_TORQUE_SELECTION);
+  const [indStatus, setIndStatus] = useState(DEFAULT_IND_STATUS);
+  const [cycleCount, setCycleCount] = useState(DEFAULT_CYCLE_COUNT);
   
-  // 2. Custom Torque Levels State - SIMPLIFIED: only isActive remains
-  const [customLevels, setCustomLevels] = useState({
-      C1: { isActive: true },
-      C2: { isActive: true },
-      C3: { isActive: false },
-  });
-
-  // 3. Current Torque Selection: The selected setting (number 0-99 OR string key 'C1', 'C2', 'C3')
-  const [currentTorqueSelection, setCurrentTorqueSelection] = useState(50); 
-  
-  // Status indicators for Industrial Tool 
-  const [indStatus, setIndStatus] = useState({
-    isLocked: false,          // Tool Lock (T)
-    isKickback: false,        // Kickback Control Triggered (ShieldAlert)
-    isMaintenance: false,     // Maintenance Reminder Simulation (Wrench)
-    isNFC: false,             // NFC Communication Simulation (Info/i)
-  });
-  const [cycleCount, setCycleCount] = useState(0); // For Maintenance Reminder simulation (10000 limit)
-  
-  // Derived state for Maintenance logic (User can trigger it manually OR by cycle count)
-  const isMaintenanceNeeded = cycleCount >= 10000 || indStatus.isMaintenance;
-  
-  // Check if locked (Error or Safety Error - used for Hammer variants)
-  const isLocked = toolStatus === 'error' || toolStatus === 'safety_error';
-  
-  // 核心逻辑: 检查交互是否被禁用
-  // Disabled if: 1. Power OFF (!isOn) OR 2. Hard lock (isLocked) OR 3. Industrial Tool Lock (indStatus.isLocked)
-  const isInteractionDisabled = !isOn || isLocked || (hmiVariant === 'industrial' && indStatus.isLocked);
+  // Derived states
+  const isMaintenanceNeeded = cycleCount >= MAINTENANCE_CYCLE_THRESHOLD || indStatus.isMaintenance;
+  const isLocked = isToolLocked(toolStatus);
+  const isInteractionDisabled = checkInteractionDisabled(
+    isOn, 
+    isLocked, 
+    hmiVariant === HMI_VARIANTS.INDUSTRIAL && indStatus.isLocked
+  );
 
   
   // Effect to link Industrial Kickback state to overall toolStatus and top bar visualization
   useEffect(() => {
-    if (hmiVariant === 'industrial' && indStatus.isKickback) {
-      setToolStatus('safety_error'); 
-    } else if (hmiVariant === 'industrial' && toolStatus === 'safety_error' && !indStatus.isKickback) {
-      // 只有在 Kickback 被手动或自动取消后，才将状态重置为 normal
-      // 这里的逻辑已经支持通过切换 indStatus.isKickback 来关闭 safety_error
-      setToolStatus('normal');
+    if (hmiVariant === HMI_VARIANTS.INDUSTRIAL && indStatus.isKickback) {
+      setToolStatus(TOOL_STATUS_TYPES.SAFETY_ERROR); 
+    } else if (hmiVariant === HMI_VARIANTS.INDUSTRIAL && toolStatus === TOOL_STATUS_TYPES.SAFETY_ERROR && !indStatus.isKickback) {
+      setToolStatus(TOOL_STATUS_TYPES.NORMAL);
     }
   }, [indStatus.isKickback, hmiVariant, toolStatus]);
   
   // Effect to ensure selection is valid if Max Limit changes
   useEffect(() => {
-    // If current selection is a number and exceeds the new limit, cap it.
     if (typeof currentTorqueSelection === 'number' && currentTorqueSelection > maxTorqueLimit) {
-        setCurrentTorqueSelection(maxTorqueLimit);
+      setCurrentTorqueSelection(maxTorqueLimit);
     }
-  }, [maxTorqueLimit, currentTorqueSelection]); // Dependency array includes the states that change the limits
+  }, [maxTorqueLimit, currentTorqueSelection]);
 
   // Handler for power toggle
   const togglePower = () => {
@@ -85,50 +91,42 @@ export default function ElectricToolHMI() {
 
   /**
    * Handler for industrial status button toggles.
-   * FIX: Added exception for 'isKickback' when active, allowing the button to be 
-   * pressed to CLEAR the 'safety_error' state, which otherwise disables interaction.
+   * Special handling for Kickback: allows clearing even when interaction is disabled.
    */
   const toggleIndStatus = (key) => {
-      // 默认的禁用逻辑检查
-      if (isInteractionDisabled) {
-          // **豁免逻辑:** // 仅允许在 Kickback 已经触发 (ON) 的情况下，再次点击它来清除状态。
-          if (key === 'isKickback' && indStatus.isKickback) {
-              // 允许继续执行切换（即将其切换为 OFF）
-          } else {
-              // 其他所有在禁用状态下的点击都将被忽略
-              return; 
-          }
+    if (isInteractionDisabled) {
+      // Allow Kickback to be turned off even when disabled
+      if (key === 'isKickback' && indStatus.isKickback) {
+        // Continue to toggle
+      } else {
+        return;
+      }
+    }
+
+    setIndStatus(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  // Handler for custom level activation toggle
+  const toggleCustomLevelActivation = (key) => {
+    setCustomLevels(prev => {
+      const newLevels = {
+        ...prev,
+        [key]: {
+          ...prev[key],
+          isActive: !prev[key].isActive
+        }
+      };
+
+      // If current selection is being toggled off, switch to max limit
+      if (currentTorqueSelection === key && !newLevels[key].isActive) {
+        setCurrentTorqueSelection(maxTorqueLimit);
       }
 
-      setIndStatus(prev => ({
-          ...prev,
-          [key]: !prev[key] // Toggle logic
-      }));
-  };
-
-  // Handler for Max Torque Limit change (from control panel slider)
-  const handleLimitChange = (newLimit) => {
-      setMaxTorqueLimit(newLimit);
-  };
-
-  // Handler for custom level activation toggle (Simplified)
-  const toggleCustomLevelActivation = (key) => {
-      setCustomLevels(prev => {
-          const newLevels = {
-              ...prev,
-              [key]: {
-                  ...prev[key],
-                  isActive: !prev[key].isActive
-              }
-          };
-
-          // If the current selection is the one being toggled off, switch to max numeric limit
-          if (currentTorqueSelection === key && !newLevels[key].isActive) {
-              setCurrentTorqueSelection(maxTorqueLimit);
-          }
-
-          return newLevels;
-      });
+      return newLevels;
+    });
   };
   
   // Mode selection handler (for Hammer variants - unused in Industrial)
@@ -162,7 +160,7 @@ export default function ElectricToolHMI() {
     indStatus,
     setIndStatus,
     isMaintenanceNeeded,
-    handleLimitChange,
+    handleLimitChange: setMaxTorqueLimit,
     currentTorqueSelection,
     setCurrentTorqueSelection,
     customLevels,
@@ -174,41 +172,16 @@ export default function ElectricToolHMI() {
   });
 
   return (
-    <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center p-4 font-sans select-none">
+    <div className={MAIN_CONTAINER_CLASSES}>
       
       {/* Custom animation style: 2Hz blink (0.5s cycle) */}
-      <style>{`
-        @keyframes blink-2hz {
-          0%, 100% { opacity: 1; filter: brightness(1.2); }
-          50% { opacity: 0.3; filter: brightness(0.8); }
-        }
-        .animate-blink-2hz {
-          animation: blink-2hz 0.5s infinite;
-        }
-
-        /* Custom track style for battery range input */
-        input[type=range]::-webkit-slider-runnable-track {
-            height: 8px;
-            border-radius: 4px;
-        }
-        
-        /* Custom toggle switch style */
-        .toggle-switch-container input:checked + .slider {
-          background-color: #3b82f6; /* Blue 500 */
-        }
-        .toggle-switch-container input:focus + .slider {
-          box-shadow: 0 0 1px #3b82f6;
-        }
-        .toggle-switch-container .slider {
-          background-color: #475569; /* Slate 600 */
-        }
-      `}</style>
+      <style>{CUSTOM_STYLES}</style>
 
       {/* --- Device Casing --- */}
-      <div className="relative w-full max-w-md bg-zinc-800 rounded-3xl overflow-hidden shadow-2xl border-4 border-zinc-600">
+      <div className={DEVICE_CASING_CLASSES}>
         
         {/* Top Status Indicator Area (Top Bar / Status Area) */}
-        <div className="relative z-0 bg-zinc-900 border-b-4 border-black">
+        <div className={TOP_BAR_CONTAINER_CLASSES}>
             {(() => {
               // Get the appropriate status bar component for the current variant
               const TopBarComponent = hmiVariant === 'segmented' 
@@ -223,34 +196,32 @@ export default function ElectricToolHMI() {
         </div>
 
         {/* HMI Screen Display Area (Black Background) */}
-        <div className={`relative bg-black p-8 transition-all duration-500 ${isOn ? 'opacity-100' : 'opacity-50 grayscale'}`}>
+        <div className={getScreenDisplayClasses(isOn)}>
           
           {hasFeature(hmiVariant, 'hasIndustrialStatus') ? (
               // --- INDUSTRIAL TOOL HMI CONTENT ---
               <IndustrialScreenContent {...buildIndustrialProps(state)} />
           ) : (
               // --- HAMMER TOOL HMI CONTENT (Max/Soft Buttons) ---
-              <div className="flex justify-between items-center gap-12">
+              <div className={HAMMER_BUTTONS_CONTAINER_CLASSES}>
                 <ModeButton {...buildModeButtonProps(state, 'max')} />
                 <ModeButton {...buildModeButtonProps(state, 'soft')} />
               </div>
           )}
 
           {/* Bottom Auxiliary Indicator: Power Light (Shared) */}
-          <div className="mt-6 flex justify-center"> 
+          <div className={POWER_INDICATOR_CONTAINER_CLASSES}> 
             <div className="flex items-center gap-2">
-               <span className="text-zinc-700 text-[10px] font-bold tracking-wider">POWER</span>
-               <div className={`w-1.5 h-1.5 rounded-full transition-colors duration-300
-                  ${!isOn ? 'bg-red-900' : 'bg-green-500'}
-               `}></div>
+               <span className={POWER_INDICATOR_TEXT_CLASSES}>POWER</span>
+               <div className={getPowerLedClasses(isOn)}></div>
             </div>
           </div>
 
           {/* Lock status prompt (Only shown during Hammer Error/Safety Error) */}
-          {hmiVariant !== 'industrial' && isOn && isLocked && (
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none w-full text-center">
-              <div className="inline-block bg-red-600/20 border border-red-500/50 rounded px-3 py-1 backdrop-blur-sm mb-2">
-                <span className="text-red-500 text-xs font-bold tracking-wider">SYSTEM LOCKED</span>
+          {hmiVariant !== HMI_VARIANTS.INDUSTRIAL && isOn && isLocked && (
+            <div className={LOCK_OVERLAY_CONTAINER_CLASSES}>
+              <div className={LOCK_OVERLAY_BADGE_CLASSES}>
+                <span className={LOCK_OVERLAY_TEXT_CLASSES}>SYSTEM LOCKED</span>
               </div>
             </div>
           )}
