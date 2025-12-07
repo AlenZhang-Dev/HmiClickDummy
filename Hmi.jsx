@@ -8,6 +8,7 @@ import ModeButton from './src/shared/components/ModeButton';
 import { StatusButton, IndStatusButton } from './src/shared/components/StatusButton';
 import CustomLevelConfig from './src/shared/components/CustomLevelConfig';
 import ACHammerScreenContent from './src/variants/ACHammer';
+import DCHammerScreenContent from './src/variants/DCHammer';
 
 // AC Hammer HMI Standard Component
 export default function ElectricToolHMI() {
@@ -144,51 +145,6 @@ export default function ElectricToolHMI() {
     }
   };
 
-  // Get style for a single bar in Segmented (5-Bar) - DC Hammer (Used for Status Override only)
-  const getSegmentBarClass = () => {
-    if (!isOn) return 'bg-slate-600 opacity-30'; 
-    
-    const baseColor = getStatusColor();
-    const shadow = toolStatus === 'normal' ? 'shadow-[0_0_10px_rgba(34,197,94,0.5)]' :
-                   toolStatus === 'warning' ? 'shadow-[0_0_10px_rgba(234,179,8,0.5)]' :
-                   'shadow-[0_0_15px_rgba(220,38,38,0.6)]';
-    
-    const animation = toolStatus === 'safety_error' ? 'animate-blink-2hz' : '';
-    
-    return `${baseColor} ${shadow} ${animation}`;
-  };
-
-  // Helper function for DC Hammer (Segmented) battery display logic
-  const getBatteryDisplay = () => {
-    let numActiveBars = 0;
-    let activeBarColorClass = 'bg-green-500'; // Default green
-
-    if (batteryLevel <= 0) {
-      numActiveBars = 0;
-      activeBarColorClass = 'bg-red-500'; 
-    } else if (batteryLevel <= 1) { 
-      numActiveBars = 1;
-      activeBarColorClass = 'bg-red-500'; 
-    } else if (batteryLevel <= 20) { 
-      numActiveBars = 1;
-      activeBarColorClass = 'bg-yellow-500'; 
-    } else if (batteryLevel <= 40) { 
-      numActiveBars = 2;
-      activeBarColorClass = 'bg-green-500'; 
-    } else if (batteryLevel <= 60) {
-      numActiveBars = 3;
-      activeBarColorClass = 'bg-green-500'; 
-    } else if (batteryLevel <= 80) {
-      numActiveBars = 4;
-      activeBarColorClass = 'bg-green-500'; 
-    } else {
-      numActiveBars = 5;
-      activeBarColorClass = 'bg-green-500'; 
-    }
-    
-    return { numActiveBars, activeBarColorClass };
-  };
-
   // Determine the track color for the battery slider
   let sliderTrackColor = '#10b981'; // Green (default)
   if (batteryLevel <= 1) {
@@ -240,42 +196,7 @@ export default function ElectricToolHMI() {
                 <ACHammerScreenContent isOn={isOn} toolStatus={toolStatus} />
             ) : hmiVariant === 'segmented' ? (
                 // --- SEGMENTED: 5 Bars Layout (DC Hammer: Battery or Status Override) ---
-                <div className="h-16 flex items-center justify-center gap-3 px-8 bg-zinc-900">
-                     {/* 5 independent Bars */}
-                     {[1, 2, 3, 4, 5].map((i) => {
-                         const isStatusOverride = toolStatus !== 'normal';
-                         let barClass = '';
-                         
-                         if (isStatusOverride) {
-                             // Priority 1: Status Override (Warning, Error, Safety)
-                             barClass = getSegmentBarClass(); 
-                         } else {
-                             // Priority 2: Normal - Display Battery Level
-                             const { numActiveBars, activeBarColorClass } = getBatteryDisplay();
-                             const isBarActive = i <= numActiveBars;
-                             
-                             if (isBarActive) {
-                                 let shadowColor = 'rgba(34,197,94,0.5)';
-                                 if (activeBarColorClass.includes('yellow')) {
-                                      shadowColor = 'rgba(234,179,8,0.5)';
-                                 } else if (activeBarColorClass.includes('red')) {
-                                     shadowColor = 'rgba(239,68,68,0.6)';
-                                 }
-
-                                 barClass = `${activeBarColorClass} shadow-[0_0_10px_${shadowColor}]`;
-                             } else {
-                                 barClass = 'bg-slate-600 opacity-30';
-                             }
-                         }
-
-                         return (
-                             <div 
-                                key={i} 
-                                className={`h-8 flex-1 rounded-sm transition-all duration-300 ${barClass}`}
-                             />
-                         );
-                     })}
-                </div>
+                <DCHammerScreenContent isOn={isOn} toolStatus={toolStatus} batteryLevel={batteryLevel} />
             ) : (
                 // --- INDUSTRIAL: Top Status Bar (Identical to Standard/Segmented Logic) ---
                 <div className={`h-16 flex items-center justify-center transition-colors duration-300 ${getSingleBarClass()}`}>
