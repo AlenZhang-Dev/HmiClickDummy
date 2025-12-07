@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 
 /**
  * 模式按钮组件
  * 用于 Hammer 变体的模式选择 (Max/Soft)
+ * Optimized with React.memo and useMemo for performance.
  * 
  * @param {Object} props
  * @param {'max'|'soft'} props.type - 按钮类型
@@ -11,35 +12,42 @@ import PropTypes from 'prop-types';
  * @param {Function} props.onClick - 点击回调
  * @param {boolean} props.disabled - 是否禁用
  */
-function ModeButton({ type, isActive, onClick, disabled }) {
+const ModeButton = React.memo(({ type, isActive, onClick, disabled }) => {
   const isMax = type === 'max';
   const label = isMax ? '100%' : '70%';
   
-  let containerStyle = "";
-  let contentStyle = "";
-  let barColor = "";
+  // Memoize style calculations
+  const styles = useMemo(() => {
+    let containerStyle = "";
+    let contentStyle = "";
+    let barColor = "";
 
-  if (disabled) {
-    if (isActive) {
-      containerStyle = "border-zinc-600 bg-zinc-800 opacity-60 cursor-not-allowed";
-      contentStyle = "text-zinc-500";
-      barColor = "bg-zinc-500";
+    if (disabled) {
+      if (isActive) {
+        containerStyle = "border-zinc-600 bg-zinc-800 opacity-60 cursor-not-allowed";
+        contentStyle = "text-zinc-500";
+        barColor = "bg-zinc-500";
+      } else {
+        containerStyle = "border-zinc-800 bg-transparent opacity-20 cursor-not-allowed";
+        contentStyle = "text-zinc-700";
+        barColor = "bg-zinc-800";
+      }
     } else {
-      containerStyle = "border-zinc-800 bg-transparent opacity-20 cursor-not-allowed";
-      contentStyle = "text-zinc-700";
-      barColor = "bg-zinc-800";
+      if (isActive) {
+        containerStyle = "border-slate-300 bg-zinc-800 shadow-[0_0_15px_rgba(255,255,255,0.1)] cursor-pointer";
+        contentStyle = "text-slate-200";
+        barColor = "bg-slate-300";
+      } else {
+        containerStyle = "border-zinc-700 bg-transparent opacity-40 hover:opacity-60 cursor-pointer";
+        contentStyle = "text-zinc-600";
+        barColor = "bg-zinc-700";
+      }
     }
-  } else {
-    if (isActive) {
-      containerStyle = "border-slate-300 bg-zinc-800 shadow-[0_0_15px_rgba(255,255,255,0.1)] cursor-pointer";
-      contentStyle = "text-slate-200";
-      barColor = "bg-slate-300";
-    } else {
-      containerStyle = "border-zinc-700 bg-transparent opacity-40 hover:opacity-60 cursor-pointer";
-      contentStyle = "text-zinc-600";
-      barColor = "bg-zinc-700";
-    }
-  }
+
+    return { containerStyle, contentStyle, barColor };
+  }, [disabled, isActive]);
+
+  const { containerStyle, contentStyle, barColor } = styles;
 
   return (
     <button 
@@ -88,7 +96,9 @@ function ModeButton({ type, isActive, onClick, disabled }) {
       </div>
     </button>
   );
-}
+});
+
+ModeButton.displayName = 'ModeButton';
 
 ModeButton.propTypes = {
   type: PropTypes.oneOf(['max', 'soft']).isRequired,
