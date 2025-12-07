@@ -172,42 +172,46 @@ Tailwind is configured to scan all relevant files for class names. Customize in 
 | `npm run build` | Build for production |
 | `npm run preview` | Preview production build |
 
-## � Deployment
+## 🚀 Deployment
 
-### Quick Deploy (5 minutes)
+### Deploy to Vercel (5 minutes)
 
-**Recommended: Vercel (Free & Easiest)**
-
-1. Push to GitHub:
+1. **Push to GitHub:**
    ```bash
+   git add .
+   git commit -m "Ready for deployment"
    git push origin main
    ```
 
-2. Visit [vercel.com](https://vercel.com)
-   - Import your GitHub repository
+2. **Deploy on Vercel:**
+   - Visit [vercel.com](https://vercel.com)
+   - Sign in with GitHub
+   - Click "New Project"
+   - Import your repository
    - Click "Deploy"
-   - Done! Get your live URL
+   - Done! Get your live URL instantly
 
-**Using Deploy Script:**
-```bash
-./deploy.sh vercel  # Deploy to Vercel
-./deploy.sh netlify # Deploy to Netlify
-./deploy.sh docker  # Build Docker image
-```
+📖 **Deployment guides**: 
+- [QUICK_DEPLOY.md](./QUICK_DEPLOY.md) - Quick 3-step guide
+- [DEPLOYMENT_SUMMARY.md](./DEPLOYMENT_SUMMARY.md) - Comprehensive Vercel deployment guide
 
-**Pre-deployment Check:**
-```bash
-./check-deployment.sh  # Automated deployment readiness check
-```
+## � Architecture & Optimization
 
-📖 **Full deployment guide**: See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions including:
-- Vercel deployment (recommended)
-- GitHub Pages
-- Netlify
-- Docker
-- Self-hosted server (Nginx)
+**Current Status**: The project is undergoing architecture optimization to improve code reusability and maintainability.
 
-⚡ **Quick start**: See [QUICK_DEPLOY.md](./QUICK_DEPLOY.md)
+📚 **Optimization Documentation**:
+- [OPTIMIZATION_PLAN.md](./docs/OPTIMIZATION_PLAN.md) - Comprehensive optimization strategy (5 phases)
+- [OPTIMIZATION_CHECKLIST.md](./docs/OPTIMIZATION_CHECKLIST.md) - Step-by-step task checklist
+- [ARCHITECTURE_COMPARISON.md](./docs/ARCHITECTURE_COMPARISON.md) - Before/After architecture comparison
+
+**Key Improvements**:
+- ✅ Component modularization (reduce main file from 1068 to <200 lines)
+- ✅ State management refactoring (useReducer)
+- ✅ Custom Hooks extraction
+- ✅ Type safety enhancement (PropTypes)
+- ✅ Performance optimization
+
+**Branch**: `Optimization/Re-structure-module`
 
 ## �🐛 Troubleshooting
 
