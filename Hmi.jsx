@@ -10,6 +10,7 @@ import CustomLevelConfig from './src/shared/components/CustomLevelConfig';
 import ACHammerScreenContent from './src/variants/ACHammer';
 import DCHammerScreenContent from './src/variants/DCHammer';
 import IndustrialScreenContent from './src/variants/Industrial';
+import { getBatterySliderColor } from './src/shared/utils/statusUtils';
 
 // AC Hammer HMI Standard Component
 export default function ElectricToolHMI() {
@@ -135,24 +136,8 @@ export default function ElectricToolHMI() {
     setMode(selectedMode);
   };
 
-  // Get status color class (Base color)
-  const getStatusColor = () => {
-     switch (toolStatus) {
-      case 'normal': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      case 'error': 
-      case 'safety_error': return 'bg-red-600';
-      default: return 'bg-blue-100';
-    }
-  };
-
   // Determine the track color for the battery slider
-  let sliderTrackColor = '#10b981'; // Green (default)
-  if (batteryLevel <= 1) {
-      sliderTrackColor = '#ef4444'; // Red
-  } else if (batteryLevel <= 20) {
-      sliderTrackColor = '#f59e0b'; // Yellow
-  }
+  const sliderTrackColor = getBatterySliderColor(batteryLevel);
 
 
   return (
