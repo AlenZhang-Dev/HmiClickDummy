@@ -1,162 +1,164 @@
 # ControlPanel Component
 
-## Overview
-The `ControlPanel` is a comprehensive control interface for the HMI simulator that provides power management, variant switching, and variant-specific simulation controls.
+## 📋 Overview
 
-## Structure
-```
-ControlPanel/
-├── index.jsx                    # Main ControlPanel component
-├── HammerControlPanel.jsx       # Control panel for Hammer variants
-├── IndustrialControlPanel.jsx   # Control panel for Industrial variant
-└── README.md                    # This file
-```
+`ControlPanel` is a unified control interface for all HMI variants (AC Hammer, DC Hammer, and Industrial). It provides a comprehensive set of controls for power management, variant selection, status simulation, and variant-specific settings.
 
-## Components
+## 🎯 Purpose
 
-### ControlPanel (Main)
-The root control panel component that orchestrates:
-- Power on/off control
-- Variant switcher (AC Hammer / DC Hammer / Industrial)
-- Rendering variant-specific control panels
+- Centralize all user interaction controls in one component
+- Provide variant-adaptive UI that shows/hides controls based on the active variant
+- Simplify the main HMI component by extracting the entire control panel
+- Maintain consistent styling and behavior across all variants
 
-**Props:**
-```javascript
-{
-  // Global states
-  isOn: bool,
-  togglePower: func,
-  hmiVariant: string,
-  setHmiVariant: func,
-  
-  // Hammer variant states
-  isLocked: bool,
-  mode: 'max' | 'soft',
-  toolStatus: 'normal' | 'warning' | 'error' | 'safety_error',
-  setToolStatus: func,
-  
-  // Industrial variant states
-  indStatus: object,
-  toggleIndStatus: func,
-  maxTorqueLimit: number,
-  handleLimitChange: func,
-  customLevels: object,
-  toggleCustomLevelActivation: func,
-  cycleCount: number,
-  setCycleCount: func,
-  isMaintenanceNeeded: bool,
-  
-  // Shared states
-  batteryLevel: number,
-  setBatteryLevel: func,
-}
-```
+## 📦 Features
 
-### HammerControlPanel
-Control panel for AC Hammer and DC Hammer variants.
+### Common Controls (All Variants)
+- **Power Toggle**: Turn the HMI on/off
+- **Variant Switcher**: Switch between AC Hammer, DC Hammer, and Industrial variants
+- **Battery Level Simulator**: Adjust battery percentage (DC Hammer & Industrial)
 
-**Features:**
-- Status simulation buttons (Normal, Warning, Error, Safety)
-- Current mode/speed display
-- Safety interlock status message
-- Battery level slider (DC Hammer only)
+### Hammer-Specific Controls (AC & DC)
+- **Tool Status Simulator**: Simulate Normal, Warning, Error, Safety Error states
+- **Mode Display**: Show current mode (Max/Soft) and speed percentage
+- **Lock Status Indicator**: Display when safety interlock is active
 
-**Props:**
-```javascript
-{
-  isOn: bool,
-  isLocked: bool,
-  mode: 'max' | 'soft',
-  hmiVariant: string,
-  toolStatus: string,
-  setToolStatus: func,
-  batteryLevel: number,
-  setBatteryLevel: func,
-}
-```
+### Industrial-Specific Controls
+- **Status Indicators**: Toggle Kickback, Maintenance, NFC states
+- **Max Torque Limit**: Set maximum torque boundary (0-99N)
+- **Custom Torque Levels**: Configure C1, C2, C3 activation states
+- **Cycle Count Simulator**: Adjust maintenance cycle count (0-12000)
 
-### IndustrialControlPanel
-Control panel for Industrial Tool variant.
+## 🔧 Usage
 
-**Features:**
-- Status indicator toggles (Kickback, Maintenance, NFC)
-- Max torque limit slider (0-99N)
-- Custom torque levels configuration (C1, C2, C3)
-- Battery level simulation
-- Cycle count simulation (with maintenance threshold at 10,000)
-
-**Props:**
-```javascript
-{
-  isOn: bool,
-  indStatus: object,
-  toggleIndStatus: func,
-  maxTorqueLimit: number,
-  handleLimitChange: func,
-  customLevels: object,
-  toggleCustomLevelActivation: func,
-  batteryLevel: number,
-  setBatteryLevel: func,
-  cycleCount: number,
-  setCycleCount: func,
-  isMaintenanceNeeded: bool,
-}
-```
-
-## Usage Example
-
-```javascript
+```jsx
 import ControlPanel from './src/shared/components/ControlPanel';
 
 function MyHMI() {
-  const [isOn, setIsOn] = useState(true);
-  const [hmiVariant, setHmiVariant] = useState('industrial');
-  // ... other states
-
+  // ... state declarations ...
+  
   return (
     <div>
-      {/* HMI Device Display */}
+      {/* HMI Display */}
       
       <ControlPanel
+        // Power & Variant
         isOn={isOn}
-        togglePower={() => setIsOn(!isOn)}
+        onTogglePower={togglePower}
         hmiVariant={hmiVariant}
-        setHmiVariant={setHmiVariant}
-        // ... other props
+        onVariantChange={setHmiVariant}
+        
+        // Hammer Controls
+        toolStatus={toolStatus}
+        onToolStatusChange={setToolStatus}
+        mode={mode}
+        isLocked={isLocked}
+        
+        // Battery
+        batteryLevel={batteryLevel}
+        onBatteryLevelChange={setBatteryLevel}
+        
+        // Industrial Controls
+        indStatus={indStatus}
+        onToggleIndStatus={toggleIndStatus}
+        maxTorqueLimit={maxTorqueLimit}
+        onMaxTorqueLimitChange={handleLimitChange}
+        customLevels={customLevels}
+        onToggleCustomLevelActivation={toggleCustomLevelActivation}
+        cycleCount={cycleCount}
+        onCycleCountChange={setCycleCount}
+        isMaintenanceNeeded={isMaintenanceNeeded}
       />
     </div>
   );
 }
 ```
 
-## Variant Detection
-The component uses the `hasFeature()` function from the variant registry to determine which control panel to render:
+## 📊 Props API
 
-```javascript
-{hasFeature(hmiVariant, 'hasIndustrialStatus') ? (
-  <IndustrialControlPanel {...props} />
-) : (
-  <HammerControlPanel {...props} />
-)}
+### Power & Variant Props
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `isOn` | `boolean` | ✅ | Current power state |
+| `onTogglePower` | `function` | ✅ | Handler for power toggle |
+| `hmiVariant` | `'standard' \| 'segmented' \| 'industrial'` | ✅ | Current HMI variant |
+| `onVariantChange` | `function` | ✅ | Handler for variant selection |
+
+### Hammer Control Props
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `toolStatus` | `'normal' \| 'warning' \| 'error' \| 'safety_error'` | ✅ | Current tool status |
+| `onToolStatusChange` | `function` | ✅ | Handler for status change |
+| `mode` | `'max' \| 'soft'` | ✅ | Current mode (for display) |
+| `isLocked` | `boolean` | ✅ | Whether safety interlock is active |
+
+### Battery Props
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `batteryLevel` | `number` | ✅ | Current battery percentage (0-100) |
+| `onBatteryLevelChange` | `function` | ✅ | Handler for battery level change |
+
+### Industrial Control Props
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `indStatus` | `object` | ✅ | Industrial status object with `isLocked`, `isKickback`, `isMaintenance`, `isNFC` |
+| `onToggleIndStatus` | `function` | ✅ | Handler for industrial status toggles |
+| `maxTorqueLimit` | `number` | ✅ | Maximum torque limit (0-99) |
+| `onMaxTorqueLimitChange` | `function` | ✅ | Handler for torque limit change |
+| `customLevels` | `object` | ✅ | Custom levels config (C1, C2, C3) |
+| `onToggleCustomLevelActivation` | `function` | ✅ | Handler for custom level toggles |
+| `cycleCount` | `number` | ✅ | Current cycle count (0-12000) |
+| `onCycleCountChange` | `function` | ✅ | Handler for cycle count change |
+| `isMaintenanceNeeded` | `boolean` | ✅ | Whether maintenance is needed |
+
+## 🎨 Styling
+
+The component uses Tailwind CSS classes with a dark slate theme:
+- Background: `bg-slate-700`
+- Borders: `border-slate-600`
+- Text: Various slate shades for hierarchy
+- Accent colors: Blue (active), Red (power off), Green (power on)
+
+## 🔄 Variant Adaptation
+
+The component automatically adapts its UI based on the `hmiVariant` prop using the variant registry's feature flags:
+
+```jsx
+const isIndustrial = hasFeature(hmiVariant, 'hasIndustrialStatus');
+const hasSegmentedDisplay = hasFeature(hmiVariant, 'hasSegmentedDisplay');
 ```
 
-## Styling
-All components use Tailwind CSS classes with:
-- Slate color palette for backgrounds
-- Conditional opacity based on power state
-- Responsive grid layouts
-- Custom slider styling for range inputs
+- **Standard (AC Hammer)**: Shows hammer controls only
+- **Segmented (DC Hammer)**: Shows hammer controls + battery level for DC variant
+- **Industrial**: Shows industrial-specific controls (status indicators, torque settings, custom levels, cycle count)
 
-## Integration
-This component is designed to work seamlessly with:
-- Variant Registry system
-- StatusButton components
-- CustomLevelConfig component
-- Status utility functions
+## 📝 Implementation Notes
 
-## Benefits
-✅ **Separation of Concerns**: Each variant has its own dedicated control panel
-✅ **Reusability**: Control panels can be used independently
-✅ **Maintainability**: Easy to modify variant-specific controls
-✅ **Type Safety**: PropTypes validation for all props
-✅ **Code Reduction**: Removed ~150 lines from main Hmi.jsx file
+1. **Opacity Management**: Controls are automatically dimmed (`opacity-50`) and disabled (`pointer-events-none`) when `isOn` is `false`
+2. **Battery Slider Color**: Uses `getBatterySliderColor()` utility to dynamically color the battery slider based on level
+3. **Maintenance Logic**: The `isMaintenanceNeeded` flag is derived from `cycleCount >= 10000` OR manual toggle
+4. **Responsive Layout**: Uses CSS Grid for button layouts (4 columns for hammer, 3 columns for industrial)
+
+## 🚀 Benefits
+
+- **Reduced Main Component Size**: Removes ~207 lines from main HMI component
+- **Single Responsibility**: Handles all control panel logic independently
+- **Reusability**: Can be used in any HMI-like interface
+- **Maintainability**: Control panel changes isolated from display logic
+- **Testability**: Easy to test control panel behavior independently
+
+## 🔗 Dependencies
+
+- `lucide-react`: Icons
+- `PropTypes`: Type validation
+- `../StatusButton`: Hammer and Industrial status buttons
+- `../CustomLevelConfig`: Custom torque level configuration
+- `../../utils/statusUtils`: Battery color utility
+- `../../../variants/registry`: Feature flag helpers
+
+## 📄 Related Files
+
+- Main component: `Hmi.jsx`
+- Status buttons: `src/shared/components/StatusButton/`
+- Custom level config: `src/shared/components/CustomLevelConfig/`
+- Variant registry: `src/variants/registry/`

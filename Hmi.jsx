@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import ModeButton from './src/shared/components/ModeButton';
+import SevenSegmentDisplay from './src/shared/components/SevenSegmentDisplay';
+import ModeButton from './src/shared/components/ModeButton';
+import ControlPanel from './src/shared/components/ControlPanel';
 import ACHammerScreenContent from './src/variants/ACHammer';
 import DCHammerScreenContent from './src/variants/DCHammer';
 import IndustrialScreenContent from './src/variants/Industrial';
-import { hasFeature } from './src/variants/registry';
-import ControlPanel from './src/shared/components/ControlPanel';
+import { getVariantComponent, hasFeature } from './src/variants/registry';
 
 // AC Hammer HMI Standard Component
 export default function ElectricToolHMI() {
@@ -130,7 +132,6 @@ export default function ElectricToolHMI() {
     setMode(selectedMode);
   };
 
-
   return (
     <div className="min-h-screen bg-slate-800 flex flex-col items-center justify-center p-4 font-sans select-none">
       
@@ -243,32 +244,32 @@ export default function ElectricToolHMI() {
 
       {/* --- Interaction Control Panel --- */}
       <ControlPanel
-        // Global states
+        // Power & Variant
         isOn={isOn}
-        togglePower={togglePower}
+        onTogglePower={togglePower}
         hmiVariant={hmiVariant}
-        setHmiVariant={setHmiVariant}
+        onVariantChange={setHmiVariant}
         
-        // Hammer variant states
-        isLocked={isLocked}
-        mode={mode}
+        // Hammer Controls
         toolStatus={toolStatus}
-        setToolStatus={setToolStatus}
+        onToolStatusChange={setToolStatus}
+        mode={mode}
+        isLocked={isLocked}
         
-        // Industrial variant states
-        indStatus={indStatus}
-        toggleIndStatus={toggleIndStatus}
-        maxTorqueLimit={maxTorqueLimit}
-        handleLimitChange={handleLimitChange}
-        customLevels={customLevels}
-        toggleCustomLevelActivation={toggleCustomLevelActivation}
-        cycleCount={cycleCount}
-        setCycleCount={setCycleCount}
-        isMaintenanceNeeded={isMaintenanceNeeded}
-        
-        // Shared states
+        // Battery (DC Hammer & Industrial)
         batteryLevel={batteryLevel}
-        setBatteryLevel={setBatteryLevel}
+        onBatteryLevelChange={setBatteryLevel}
+        
+        // Industrial Controls
+        indStatus={indStatus}
+        onToggleIndStatus={toggleIndStatus}
+        maxTorqueLimit={maxTorqueLimit}
+        onMaxTorqueLimitChange={handleLimitChange}
+        customLevels={customLevels}
+        onToggleCustomLevelActivation={toggleCustomLevelActivation}
+        cycleCount={cycleCount}
+        onCycleCountChange={setCycleCount}
+        isMaintenanceNeeded={isMaintenanceNeeded}
       />
     </div>
   );
