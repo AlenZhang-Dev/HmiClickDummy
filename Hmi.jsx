@@ -6,6 +6,7 @@ import {
 import SevenSegmentDisplay from './src/shared/components/SevenSegmentDisplay';
 import ModeButton from './src/shared/components/ModeButton';
 import { StatusButton, IndStatusButton } from './src/shared/components/StatusButton';
+import CustomLevelConfig from './src/shared/components/CustomLevelConfig';
 
 // AC Hammer HMI Standard Component
 export default function ElectricToolHMI() {
@@ -580,42 +581,6 @@ export default function ElectricToolHMI() {
     </div>
   );
 }
-
-/**
- * Custom Level Configuration Component for Control Panel (Simplified)
- * Only contains the activation toggle.
- */
-function CustomLevelConfig({ levelKey, levelData, onToggleActivation }) {
-
-    return (
-        <div className={`flex items-center justify-between p-3 rounded-lg border transition-colors ${levelData.isActive ? 'border-blue-700 bg-slate-800' : 'border-slate-700 bg-slate-700/50'}`}>
-            
-            <span className="font-mono font-extrabold text-sm text-blue-300 w-10">
-                {levelKey} 
-            </span>
-            <span className="text-xs text-slate-400 flex-1 ml-4">
-                自定义挡位开关
-            </span>
-            
-            {/* Toggle Switch */}
-            <div className="toggle-switch-container flex items-center">
-                <span className={`mr-2 text-sm font-medium ${levelData.isActive ? 'text-blue-400' : 'text-slate-500'}`}>
-                    {levelData.isActive ? '启用' : '禁用'}
-                </span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                    <input 
-                        type="checkbox" 
-                        checked={levelData.isActive} 
-                        onChange={() => onToggleActivation(levelKey)} 
-                        className="sr-only peer"
-                    />
-                    <div className="w-9 h-5 rounded-full peer peer-focus:ring-2 peer-focus:ring-blue-300 peer-checked:after:translate-x-full peer-checked:after:border-white peer-checked:after:bg-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all slider"></div>
-                </label>
-            </div>
-        </div>
-    );
-}
-
 
 /**
  * --- Industrial Tool Screen Content (7-Segment Display and Icons) ---
