@@ -44,6 +44,12 @@ const ControlPanel = React.memo(({
   cycleCount,
   onCycleCountChange,
   isMaintenanceNeeded,
+  
+  // Fixing1 Controls
+  autoMode,
+  onAutoModeChange,
+  speedLevel,
+  onSpeedChange,
 }) => {
   // Memoize expensive calculations
   const sliderTrackColor = useMemo(
@@ -62,7 +68,7 @@ const ControlPanel = React.memo(({
   );
 
   return (
-    <div className="mt-6 w-full max-w-md bg-slate-700 rounded-xl p-6 shadow-lg text-white space-y-6">
+    <div className="w-full max-w-md bg-slate-700 rounded-xl p-6 shadow-lg text-white space-y-6">
       
       {/* Power and Variant Control */}
       <div className="flex flex-col gap-4 pb-4 border-b border-slate-600">
@@ -82,11 +88,11 @@ const ControlPanel = React.memo(({
         </div>
 
         {/* HMI Variant Switcher */}
-        <div className="bg-slate-800 p-3 rounded-lg flex items-center justify-between">
-          <span className="text-sm text-slate-400 flex items-center gap-2">
+        <div className="bg-slate-800 p-3 rounded-lg">
+          <span className="text-sm text-slate-400 flex items-center gap-2 mb-2">
             <Layout size={20} /> Design Variant (设计媒体)
           </span>
-          <div className="flex bg-slate-900 rounded p-1">
+          <div className="flex flex-wrap gap-2 bg-slate-900 rounded p-2">
             <button 
               onClick={() => onVariantChange('standard')}
               className={`px-3 py-1 text-xs font-bold rounded transition-all ${
@@ -117,12 +123,22 @@ const ControlPanel = React.memo(({
             >
               Industrial
             </button>
+            <button 
+              onClick={() => onVariantChange('fixing1')}
+              className={`px-3 py-1 text-xs font-bold rounded transition-all ${
+                hmiVariant === 'fixing1' 
+                  ? 'bg-purple-600 text-white shadow' 
+                  : 'text-slate-500 hover:text-slate-300'
+              }`}
+            >
+              Fixing 1
+            </button>
           </div>
         </div>
       </div>
       
       {/* --- Tool Status Simulator (Hammer) --- */}
-      {!isIndustrial && (
+      {!isIndustrial && hmiVariant !== 'fixing1' && (
         <div className={`transition-opacity duration-300 ${!isOn ? 'opacity-50 pointer-events-none' : ''}`}>
           <div className="text-slate-400 text-xs font-bold uppercase mb-3 tracking-wider">
             Hammer Signal Simulation (信号模拟)
@@ -343,6 +359,69 @@ const ControlPanel = React.memo(({
         </div>
       )}
       
+      {/* --- Fixing1 Variant Status Display (Read-only) --- */}
+      {hmiVariant === 'fixing1' && (
+        <div className="transition-opacity duration-300">
+          <div className="text-slate-400 text-xs font-bold uppercase mb-3 tracking-wider">
+            Fixing 1 Status (Fixing 1 状态) - 仅显示
+          </div>
+          
+          {/* Auto Mode Display */}
+          <div className="mb-4">
+            <div className="text-slate-300 text-xs font-semibold mb-2">Auto Mode (自动模式)</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div
+                className={`px-4 py-2 rounded-lg text-sm font-bold text-center transition-all cursor-not-allowed ${
+                  autoMode === 'slow_down'
+                    ? 'bg-blue-600 text-white shadow-lg'
+                    : 'bg-slate-800 text-slate-500'
+                }`}
+              >
+                🚫 Auto Slow Down
+              </div>
+              <div
+                className={`px-4 py-2 rounded-lg text-sm font-bold text-center transition-all cursor-not-allowed ${
+                  autoMode === 'stop'
+                    ? 'bg-orange-600 text-white shadow-lg'
+                    : 'bg-slate-800 text-slate-500'
+                }`}
+              >
+                ⏸️ Auto Stop
+              </div>
+            </div>
+            <div className="mt-1 text-xs text-slate-500 italic text-center">
+              点击面板上的 MODE 按钮切换
+            </div>
+          </div>
+          
+          {/* Speed Level Display */}
+          <div>
+            <div className="text-slate-300 text-xs font-semibold mb-2">Speed Level (速度档位)</div>
+            <div className="grid grid-cols-3 gap-2">
+              {[1, 2, 3].map((level) => (
+                <div
+                  key={level}
+                  className={`px-4 py-3 rounded-lg text-lg font-bold text-center transition-all cursor-not-allowed ${
+                    speedLevel === level
+                      ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/50'
+                      : 'bg-slate-800 text-slate-500'
+                  }`}
+                >
+                  {level}
+                </div>
+              ))}
+            </div>
+            <div className="mt-2 text-center">
+              <span className="text-xs text-slate-400">Current Speed: </span>
+              <span className="text-sm font-bold text-purple-400">LEVEL {speedLevel}</span>
+            </div>
+            <div className="mt-1 text-xs text-slate-500 italic text-center">
+              点击面板上的数字按钮或 SPEED 按钮切换
+            </div>
+          </div>
+        </div>
+      )}
+      
     </div>
   );
 });
@@ -353,7 +432,7 @@ ControlPanel.propTypes = {
   // Power & Variant
   isOn: PropTypes.bool.isRequired,
   onTogglePower: PropTypes.func.isRequired,
-  hmiVariant: PropTypes.oneOf(['standard', 'segmented', 'industrial']).isRequired,
+  hmiVariant: PropTypes.oneOf(['standard', 'segmented', 'industrial', 'fixing1']).isRequired,
   onVariantChange: PropTypes.func.isRequired,
   
   // Hammer Controls
@@ -385,6 +464,12 @@ ControlPanel.propTypes = {
   cycleCount: PropTypes.number.isRequired,
   onCycleCountChange: PropTypes.func.isRequired,
   isMaintenanceNeeded: PropTypes.bool.isRequired,
+  
+  // Fixing1 Controls
+  autoMode: PropTypes.oneOf(['slow_down', 'stop']),
+  onAutoModeChange: PropTypes.func,
+  speedLevel: PropTypes.oneOf([1, 2, 3]),
+  onSpeedChange: PropTypes.func,
 };
 
 export default ControlPanel;
