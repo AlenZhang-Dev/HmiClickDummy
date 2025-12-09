@@ -4,11 +4,13 @@ import ControlPanel from './src/shared/components/ControlPanel';
 import ACHammerScreenContent from './src/variants/ACHammer';
 import DCHammerScreenContent from './src/variants/DCHammer';
 import IndustrialScreenContent from './src/variants/Industrial';
+import Fixing1ScreenContent from './src/variants/Fixing1';
 import { hasFeature } from './src/variants/registry';
-import { buildIndustrialProps, buildModeButtonProps, buildTopBarProps, buildControlPanelProps, buildStateObject } from './src/shared/utils/propsBuilder';
+import { buildIndustrialProps, buildFixing1Props, buildModeButtonProps, buildTopBarProps, buildControlPanelProps, buildStateObject } from './src/shared/utils/propsBuilder';
 import {
   DEFAULT_POWER_STATE, DEFAULT_MODE, DEFAULT_HMI_VARIANT, DEFAULT_TOOL_STATUS, DEFAULT_BATTERY_LEVEL,
   DEFAULT_MAX_TORQUE_LIMIT, DEFAULT_CUSTOM_LEVELS, DEFAULT_TORQUE_SELECTION, DEFAULT_IND_STATUS, DEFAULT_CYCLE_COUNT,
+  DEFAULT_AUTO_MODE, DEFAULT_SPEED_LEVEL,
   MAINTENANCE_CYCLE_THRESHOLD, HMI_VARIANTS, TOOL_STATUS_TYPES, MAIN_CONTAINER_CLASSES, DEVICE_CASING_CLASSES,
   TOP_BAR_CONTAINER_CLASSES, getScreenDisplayClasses, HAMMER_BUTTONS_CONTAINER_CLASSES, POWER_INDICATOR_CONTAINER_CLASSES,
   POWER_INDICATOR_TEXT_CLASSES, getPowerLedClasses, LOCK_OVERLAY_CONTAINER_CLASSES, LOCK_OVERLAY_BADGE_CLASSES,
@@ -27,6 +29,10 @@ export default function ElectricToolHMI() {
   const [currentTorqueSelection, setCurrentTorqueSelection] = useState(DEFAULT_TORQUE_SELECTION);
   const [indStatus, setIndStatus] = useState(DEFAULT_IND_STATUS);
   const [cycleCount, setCycleCount] = useState(DEFAULT_CYCLE_COUNT);
+  
+  // Fixing1 variant states
+  const [autoMode, setAutoMode] = useState(DEFAULT_AUTO_MODE);
+  const [speedLevel, setSpeedLevel] = useState(DEFAULT_SPEED_LEVEL);
   
   // Derived states
   const isMaintenanceNeeded = cycleCount >= MAINTENANCE_CYCLE_THRESHOLD || indStatus.isMaintenance;
@@ -73,22 +79,31 @@ export default function ElectricToolHMI() {
     isLocked, isInteractionDisabled, batteryLevel, setBatteryLevel, maxTorqueLimit, indStatus, setIndStatus,
     isMaintenanceNeeded, handleLimitChange: setMaxTorqueLimit, currentTorqueSelection, setCurrentTorqueSelection,
     customLevels, setCustomLevels, toggleIndStatus, toggleCustomLevelActivation, cycleCount, setCycleCount,
+    autoMode, setAutoMode, speedLevel, setSpeedLevel,
   }), [isOn, hmiVariant, mode, toolStatus, isLocked, isInteractionDisabled, batteryLevel, maxTorqueLimit,
-      indStatus, isMaintenanceNeeded, currentTorqueSelection, customLevels, cycleCount]);
+      indStatus, isMaintenanceNeeded, currentTorqueSelection, customLevels, cycleCount, autoMode, speedLevel]);
 
   return (
     <div className={MAIN_CONTAINER_CLASSES}>
       <style>{CUSTOM_STYLES}</style>
-      <div className={DEVICE_CASING_CLASSES}>
-        <div className={TOP_BAR_CONTAINER_CLASSES}>
-          {(() => {
-            const TopBarComponent = hmiVariant === 'segmented' ? DCHammerScreenContent : ACHammerScreenContent;
-            const hasSegmentedDisplay = hasFeature(hmiVariant, 'hasSegmentedDisplay');
-            return <TopBarComponent {...buildTopBarProps(state, hasSegmentedDisplay)} />;
-          })()}
-        </div>
-        <div className={getScreenDisplayClasses(isOn)}>
-          {hasFeature(hmiVariant, 'hasIndustrialStatus') ? (
+      <div className={hmiVariant === 'fixing1' ? '' : DEVICE_CASING_CLASSES}>
+        {/* Top Bar - Show for all variants except Fixing1 */}
+        {hmiVariant !== 'fixing1' && (
+          <div className={TOP_BAR_CONTAINER_CLASSES}>
+            {(() => {
+              const TopBarComponent = hmiVariant === 'segmented' ? DCHammerScreenContent : ACHammerScreenContent;
+              const hasSegmentedDisplay = hasFeature(hmiVariant, 'hasSegmentedDisplay');
+              return <TopBarComponent {...buildTopBarProps(state, hasSegmentedDisplay)} />;
+            })()}
+          </div>
+        )}
+        <div className={hmiVariant === 'fixing1' 
+          ? `relative transition-all duration-500 ${isOn ? 'opacity-100' : 'opacity-50 grayscale'}`
+          : getScreenDisplayClasses(isOn)
+        }>
+          {hmiVariant === 'fixing1' ? (
+            <Fixing1ScreenContent {...buildFixing1Props(state)} />
+          ) : hasFeature(hmiVariant, 'hasIndustrialStatus') ? (
             <IndustrialScreenContent {...buildIndustrialProps(state)} />
           ) : (
             <div className={HAMMER_BUTTONS_CONTAINER_CLASSES}>
@@ -96,13 +111,15 @@ export default function ElectricToolHMI() {
               <ModeButton {...buildModeButtonProps(state, 'soft')} />
             </div>
           )}
-          <div className={POWER_INDICATOR_CONTAINER_CLASSES}> 
-            <div className="flex items-center gap-2">
-              <span className={POWER_INDICATOR_TEXT_CLASSES}>POWER</span>
-              <div className={getPowerLedClasses(isOn)}></div>
+          {hmiVariant !== 'fixing1' && (
+            <div className={POWER_INDICATOR_CONTAINER_CLASSES}> 
+              <div className="flex items-center gap-2">
+                <span className={POWER_INDICATOR_TEXT_CLASSES}>POWER</span>
+                <div className={getPowerLedClasses(isOn)}></div>
+              </div>
             </div>
-          </div>
-          {hmiVariant !== HMI_VARIANTS.INDUSTRIAL && isOn && isLocked && (
+          )}
+          {hmiVariant !== HMI_VARIANTS.INDUSTRIAL && hmiVariant !== 'fixing1' && isOn && isLocked && (
             <div className={LOCK_OVERLAY_CONTAINER_CLASSES}>
               <div className={LOCK_OVERLAY_BADGE_CLASSES}>
                 <span className={LOCK_OVERLAY_TEXT_CLASSES}>SYSTEM LOCKED</span>

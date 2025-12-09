@@ -43,6 +43,31 @@ export const buildIndustrialProps = (state) => {
 };
 
 /**
+ * Build props for Fixing1 variant screen content
+ * @param {Object} state - Application state object
+ * @returns {Object} Props object for Fixing1ScreenContent
+ */
+export const buildFixing1Props = (state) => {
+  const {
+    isOn,
+    autoMode,
+    setAutoMode,
+    speedLevel,
+    setSpeedLevel,
+    isInteractionDisabled,
+  } = state;
+
+  return {
+    isOn,
+    autoMode,
+    onAutoModeChange: setAutoMode,
+    speedLevel,
+    onSpeedChange: setSpeedLevel,
+    isInteractionDisabled,
+  };
+};
+
+/**
  * Build props for Hammer variant mode buttons
  * @param {Object} state - Application state object
  * @param {string} type - Button type ('max' or 'soft')
@@ -111,6 +136,12 @@ export const buildControlPanelProps = (state) => {
     cycleCount,
     setCycleCount,
     isMaintenanceNeeded,
+    
+    // Fixing1 Controls
+    autoMode,
+    setAutoMode,
+    speedLevel,
+    setSpeedLevel,
   } = state;
 
   return {
@@ -140,6 +171,12 @@ export const buildControlPanelProps = (state) => {
     cycleCount,
     onCycleCountChange: setCycleCount,
     isMaintenanceNeeded,
+    
+    // Fixing1 Controls
+    autoMode,
+    onAutoModeChange: setAutoMode,
+    speedLevel,
+    onSpeedChange: setSpeedLevel,
   };
 };
 

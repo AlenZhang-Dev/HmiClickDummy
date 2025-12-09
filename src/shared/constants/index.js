@@ -53,9 +53,9 @@ export const DEFAULT_TORQUE_SELECTION = 50;
 
 /**
  * Default HMI variant on app start
- * Options: 'standard' (AC Hammer) | 'segmented' (DC Hammer) | 'industrial'
+ * Options: 'standard' (AC Hammer) | 'segmented' (DC Hammer) | 'industrial' | 'fixing1'
  */
-export const DEFAULT_HMI_VARIANT = 'industrial';
+export const DEFAULT_HMI_VARIANT = 'fixing1';
 
 /**
  * Default power state on app start
@@ -98,6 +98,18 @@ export const DEFAULT_IND_STATUS = {
  */
 export const DEFAULT_CYCLE_COUNT = 0;
 
+/**
+ * Default auto mode for Fixing1 variant
+ * Options: 'slow_down' | 'stop'
+ */
+export const DEFAULT_AUTO_MODE = 'slow_down';
+
+/**
+ * Default speed level for Fixing1 variant
+ * Options: 1 | 2 | 3
+ */
+export const DEFAULT_SPEED_LEVEL = 1;
+
 // ============================================================================
 // CSS CLASS NAME PATTERNS
 // ============================================================================
@@ -106,7 +118,7 @@ export const DEFAULT_CYCLE_COUNT = 0;
  * Common container classes for the main app wrapper
  */
 export const MAIN_CONTAINER_CLASSES = 
-  'min-h-screen bg-slate-800 flex flex-col items-center justify-center p-4 font-sans select-none';
+  'min-h-screen bg-slate-800 flex flex-row items-center justify-center gap-8 p-4 font-sans select-none';
 
 /**
  * Device casing wrapper classes

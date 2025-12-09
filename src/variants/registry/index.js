@@ -1,6 +1,7 @@
 import ACHammerScreenContent from '../ACHammer';
 import DCHammerScreenContent from '../DCHammer';
 import IndustrialScreenContent from '../Industrial';
+import Fixing1ScreenContent from '../Fixing1';
 
 /**
  * Variant Registry
@@ -53,6 +54,22 @@ export const VARIANTS = {
       hasModeSelection: false,
       hasCustomLevels: true,
       hasIndustrialStatus: true,
+    },
+  },
+  FIXING_1: {
+    id: 'fixing1',
+    name: 'Fixing 1',
+    displayName: 'Fixing 1',
+    component: Fixing1ScreenContent,
+    description: 'Vertical industrial panel with auto mode and 3-speed control (1:2.2 aspect ratio)',
+    features: {
+      hasBatteryDisplay: false,
+      hasSegmentedDisplay: false,
+      hasModeSelection: false,
+      hasCustomLevels: false,
+      hasIndustrialStatus: false,
+      hasAutoMode: true,          // 🆕 Auto Slow Down / Auto Stop
+      hasSpeedControl: true,      // 🆕 3-level speed control
     },
   },
 };
